@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct StatsBarApp: App {
@@ -26,6 +27,8 @@ class AppDelegate: NSObject, ObservableObject, NSApplicationDelegate {
         if let window = NSApplication.shared.windows.first {
             window.close()
         }
+
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         setupMenu()
     }

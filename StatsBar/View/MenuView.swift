@@ -259,6 +259,7 @@ struct MenuView: View {
             }
 
             self.updateMenu(metrics)
+            NotificationManager.shared.evaluate(metrics: metrics)
         }
     }
 }
