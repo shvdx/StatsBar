@@ -28,7 +28,9 @@ class AppDelegate: NSObject, ObservableObject, NSApplicationDelegate {
             window.close()
         }
 
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        if UserDefaults.standard.object(forKey: NotificationManager.enabledKey) as? Bool ?? true {
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        }
 
         setupMenu()
     }

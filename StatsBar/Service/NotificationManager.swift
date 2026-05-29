@@ -17,14 +17,27 @@ struct AlertThresholds {
 
 class NotificationManager {
     static let shared = NotificationManager()
+    static let enabledKey = "notificationsEnabled"
 
     var thresholds = AlertThresholds()
+
+    var isEnabled: Bool {
+        get { UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Self.enabledKey)
+            if !newValue {
+                lastNotified.removeAll()
+            }
+        }
+    }
 
     private var lastNotified: [String: Date] = [:]
 
     private init() {}
 
     func evaluate(metrics: Metrics) {
+        guard isEnabled else { return }
+
         let now = Date()
 
         check(
