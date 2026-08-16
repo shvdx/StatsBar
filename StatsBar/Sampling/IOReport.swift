@@ -5,8 +5,8 @@
 //  Created by Shashank on 23/11/24.
 //
 
-import Foundation
 import CoreFoundation
+import Foundation
 import IOKit
 
 struct IOSample {
@@ -28,12 +28,28 @@ private func collectIOSamples(data: CFDictionary) -> [IOSample] {
         let dict = CFArrayGetValueAtIndex(items, index)
         let item = unsafeBitCast(dict, to: CFDictionary.self)
 
-        let group = IOReportChannelGetGroup(item)?.takeUnretainedValue() ?? ("" as CFString)
-        let subGroup = IOReportChannelGetSubGroup(item)?.takeUnretainedValue() ?? ("" as CFString)
-        let channel = IOReportChannelGetChannelName(item)?.takeUnretainedValue() ?? ("" as CFString)
-        let unit = IOReportChannelGetUnitLabel(item)?.takeUnretainedValue() ?? ("" as CFString)
+        let group =
+            IOReportChannelGetGroup(item)?.takeUnretainedValue()
+            ?? ("" as CFString)
+        let subGroup =
+            IOReportChannelGetSubGroup(item)?.takeUnretainedValue()
+            ?? ("" as CFString)
+        let channel =
+            IOReportChannelGetChannelName(item)?.takeUnretainedValue()
+            ?? ("" as CFString)
+        let unit =
+            IOReportChannelGetUnitLabel(item)?.takeUnretainedValue()
+            ?? ("" as CFString)
 
-        samples.append(IOSample(group: group as String, subGroup: subGroup as String, channel: channel as String, unit: unit as String, delta: item))
+        samples.append(
+            IOSample(
+                group: group as String,
+                subGroup: subGroup as String,
+                channel: channel as String,
+                unit: unit as String,
+                delta: item
+            )
+        )
     }
 
     return samples
@@ -60,14 +76,25 @@ class IOReport {
         for _ in 0..<measures {
             try await Task.sleep(for: .milliseconds(step), tolerance: .zero)
             let next = try self.rawSample()
-            guard let diff = IOReportCreateSamplesDelta(prev.samples, next.samples, nil)?.takeRetainedValue() else {
-                throw ServiceError.unexpectedError(msg: "Diff null in sample delta")
+            guard
+                let diff = IOReportCreateSamplesDelta(
+                    prev.samples,
+                    next.samples,
+                    nil
+                )?.takeRetainedValue()
+            else {
+                throw ServiceError.unexpectedError(
+                    msg: "Diff null in sample delta"
+                )
             }
 
-            let elapsed = Date(timeIntervalSince1970: next.time).timeIntervalSince(Date(timeIntervalSince1970: prev.time))
+            let elapsed = Date(timeIntervalSince1970: next.time)
+                .timeIntervalSince(Date(timeIntervalSince1970: prev.time))
             prev = next
 
-            samples.append((collectIOSamples(data: diff), max(elapsed, TimeInterval(1))))
+            samples.append(
+                (collectIOSamples(data: diff), max(elapsed, TimeInterval(1)))
+            )
         }
 
         self.prev = prev
@@ -75,8 +102,16 @@ class IOReport {
         return samples
     }
 
-    private func rawSample() throws -> (samples: CFDictionary, time: TimeInterval) {
-        guard let sample = IOReportCreateSamples(self.subscription, self.channels, nil)?.takeRetainedValue() else {
+    private func rawSample() throws -> (
+        samples: CFDictionary, time: TimeInterval
+    ) {
+        guard
+            let sample = IOReportCreateSamples(
+                self.subscription,
+                self.channels,
+                nil
+            )?.takeRetainedValue()
+        else {
             throw ServiceError.unexpectedError(msg: "RawSample - no value")
         }
         return (sample, Date().timeIntervalSince1970)
@@ -93,7 +128,13 @@ private func getIOChannels() throws -> CFMutableDictionary {
 
     var channels = [CFDictionary]()
     for (gname, sname) in channelNames {
-        let channel = IOReportCopyChannelsInGroup(gname as CFString?, sname as CFString?, 0, 0, 0)
+        let channel = IOReportCopyChannelsInGroup(
+            gname as CFString?,
+            sname as CFString?,
+            0,
+            0,
+            0
+        )
         guard let channel = channel?.takeRetainedValue() else {
             print("Channel empty for name: \(gname): \(sname ?? "")")
             continue
@@ -109,21 +150,29 @@ private func getIOChannels() throws -> CFMutableDictionary {
     }
 
     let size = CFDictionaryGetCount(chan)
-    guard let channel = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, size, chan) else {
+    guard
+        let channel = CFDictionaryCreateMutableCopy(
+            kCFAllocatorDefault,
+            size,
+            chan
+        )
+    else {
         throw ServiceError.errorOwningChannels
     }
 
     guard let chan = channel as? [String: Any] else {
         throw ServiceError.unableToCheckChannels
     }
-    guard let _ = chan["IOReportChannels"] else {
+    guard chan["IOReportChannels"] != nil else {
         throw ServiceError.noIOChannels
     }
 
     return channel
 }
 
-private func getIOSubscription(chan: CFMutableDictionary) throws -> IOReportSubscriptionRef {
+private func getIOSubscription(chan: CFMutableDictionary) throws
+    -> IOReportSubscriptionRef
+{
     var s: Unmanaged<CFMutableDictionary>?
     guard let subs = IOReportCreateSubscription(nil, chan, &s, 0, nil) else {
         throw ServiceError.failedToGetChannelSubscription

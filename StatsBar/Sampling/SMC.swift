@@ -10,11 +10,13 @@
 import Foundation
 
 struct KeyData {
-    typealias SMCBytes_t = (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
-                            UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
-                            UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
-                            UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
-                            UInt8, UInt8, UInt8, UInt8)
+    typealias SMCBytes_t = (
+        UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+        UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+        UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+        UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+        UInt8, UInt8, UInt8, UInt8
+    )
 
     struct Version {
         var major: CUnsignedChar = 0
@@ -47,12 +49,14 @@ struct KeyData {
     var status: UInt8 = 0
     var data8: UInt8 = 0
     var data32: UInt32 = 0
-    var bytes: SMCBytes_t = (UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
-                             UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
-                             UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
-                             UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
-                             UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
-                             UInt8(0), UInt8(0))
+    var bytes: SMCBytes_t = (
+        UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
+        UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
+        UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
+        UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
+        UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt8(0),
+        UInt8(0), UInt8(0)
+    )
 }
 
 extension FourCharCode {
@@ -65,10 +69,10 @@ extension FourCharCode {
     }
 
     func toString() -> String {
-        return String(describing: UnicodeScalar(self >> 24 & 0xff)!) +
-               String(describing: UnicodeScalar(self >> 16 & 0xff)!) +
-               String(describing: UnicodeScalar(self >> 8  & 0xff)!) +
-               String(describing: UnicodeScalar(self       & 0xff)!)
+        return String(describing: UnicodeScalar(self >> 24 & 0xff)!)
+            + String(describing: UnicodeScalar(self >> 16 & 0xff)!)
+            + String(describing: UnicodeScalar(self >> 8 & 0xff)!)
+            + String(describing: UnicodeScalar(self & 0xff)!)
     }
 }
 
@@ -84,7 +88,9 @@ class SMC {
             if name == "AppleSMCKeysEndpoint" {
                 let rs = IOServiceOpen(dev, mach_task_self_, 0, &conn)
                 if rs != 0 {
-                    throw ServiceError.unexpectedError(msg: "Failed connect SMC channel")
+                    throw ServiceError.unexpectedError(
+                        msg: "Failed connect SMC channel"
+                    )
                 }
             }
         }
@@ -135,16 +141,27 @@ class SMC {
         var outputSize = MemoryLayout<KeyData>.stride
         var output = KeyData()
 
-        let ret = IOConnectCallStructMethod(self.connection, 2, &input, inputSize, &output, &outputSize)
+        let ret = IOConnectCallStructMethod(
+            self.connection,
+            2,
+            &input,
+            inputSize,
+            &output,
+            &outputSize
+        )
         if ret != 0 {
-            throw ServiceError.unexpectedError(msg: "SMC: Failed to read IOConnect - \(ret)")
+            throw ServiceError.unexpectedError(
+                msg: "SMC: Failed to read IOConnect - \(ret)"
+            )
         }
 
         if output.result == 132 {
             throw ServiceError.unexpectedError(msg: "SMC Key not found")
         }
         if output.result != 0 {
-            throw ServiceError.unexpectedError(msg: "SMC error: \(output.result)")
+            throw ServiceError.unexpectedError(
+                msg: "SMC error: \(output.result)"
+            )
         }
 
         return output

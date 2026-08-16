@@ -10,11 +10,13 @@
 import Foundation
 import IOKit
 
-func getIOServices(service: String) throws -> [(name: String, next: io_object_t)] {
+func getIOServices(service: String) throws -> [(
+    name: String, next: io_object_t
+)] {
     var result: [(name: String, next: io_object_t)] = []
 
     let service = IOServiceMatching(service)!
-    var iter = io_iterator_t(0);
+    var iter = io_iterator_t(0)
     if IOServiceGetMatchingServices(0, service, &iter) != 0 {
         print("Error: Service not found")
         throw ServiceError.matchingServiceNotFound
@@ -39,7 +41,12 @@ func getIOServices(service: String) throws -> [(name: String, next: io_object_t)
 public func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
     var properties: Unmanaged<CFMutableDictionary>? = nil
 
-    if IORegistryEntryCreateCFProperties(entry, &properties, kCFAllocatorDefault, 0) != kIOReturnSuccess {
+    if IORegistryEntryCreateCFProperties(
+        entry,
+        &properties,
+        kCFAllocatorDefault,
+        0
+    ) != kIOReturnSuccess {
         return nil
     }
 
@@ -49,14 +56,21 @@ public func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
 }
 
 // https://opensource.apple.com/source/bless/bless-152/libbless/APFS/BLAPFSUtilities.c.auto.html
-public func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
+public func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int)
+    -> io_registry_entry_t?
+{
     var parent: io_registry_entry_t = 0
 
-    if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent) != KERN_SUCCESS {
+    if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent)
+        != KERN_SUCCESS
+    {
         return nil
     }
 
-    for _ in 1...level where IORegistryEntryGetParentEntry(parent, kIOServicePlane, &parent) != KERN_SUCCESS {
+    for _ in 1...level
+    where IORegistryEntryGetParentEntry(parent, kIOServicePlane, &parent)
+        != KERN_SUCCESS
+    {
         IOObjectRelease(parent)
         return nil
     }

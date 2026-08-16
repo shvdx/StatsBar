@@ -5,8 +5,8 @@
 //  Created by Shashank on 16/08/25.
 //
 
-import Foundation
 import Collections
+import Foundation
 
 @MainActor
 @Observable
@@ -45,8 +45,8 @@ final class MetricsEngine {
     }
 
     func start() {
-        assert(self.task == nil);
-        assert(self.sampler == nil);
+        assert(self.task == nil)
+        assert(self.sampler == nil)
 
         let sampler: Sampler
         do {
@@ -63,7 +63,10 @@ final class MetricsEngine {
         self.task = Task.detached(priority: .background) { [weak self] in
             while !Task.isCancelled {
                 do {
-                    try await Task.sleep(for: .milliseconds(Self.sample_interval_ms), tolerance: .zero)
+                    try await Task.sleep(
+                        for: .milliseconds(Self.sample_interval_ms),
+                        tolerance: .zero
+                    )
                     let metrics = try await sampler.getMetrics()
                     let disks = sampler.disk.getDisks()
 
@@ -92,8 +95,11 @@ final class MetricsEngine {
         self.stop()
     }
 
-    private func apply(metrics: Metrics, disks: OrderedDictionary<String, Drive>) {
-        assert(self.usageGraph.count <= GRAPH_POINTS_MAX);
+    private func apply(
+        metrics: Metrics,
+        disks: OrderedDictionary<String, Drive>
+    ) {
+        assert(self.usageGraph.count <= GRAPH_POINTS_MAX)
 
         self.disks = disks
         self.metrics = metrics
@@ -108,7 +114,8 @@ final class MetricsEngine {
             }
         }
 
-        let id = self.usageGraph.last?.id.advanced(by: 1)
+        let id =
+            self.usageGraph.last?.id.advanced(by: 1)
             ?? UInt64(Date().timeIntervalSince1970.magnitude)
 
         self.usageGraph.append(
@@ -129,13 +136,19 @@ final class MetricsEngine {
                 continue
             }
 
-            let point = DiskUsagePoint(id: id, name: drive.mediaName, usage: usage)
+            let point = DiskUsagePoint(
+                id: id,
+                name: drive.mediaName,
+                usage: usage
+            )
             if var queue = self.diskUsageGraph[key] {
                 queue.append(point)
                 Self.trim(&queue)
                 self.diskUsageGraph[key] = queue
             } else {
-                var seeded = DiskUsagePoint.mockData(sId: id - UInt64(GRAPH_POINTS_MAX))
+                var seeded = DiskUsagePoint.mockData(
+                    sId: id - UInt64(GRAPH_POINTS_MAX)
+                )
                 seeded.append(point)
                 Self.trim(&seeded)
                 self.diskUsageGraph[key] = seeded

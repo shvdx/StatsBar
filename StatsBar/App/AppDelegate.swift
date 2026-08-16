@@ -5,8 +5,8 @@
 //  Created by Shashank on 11/11/24.
 //
 
-import SwiftUI
 import AppKit
+import SwiftUI
 import UserNotifications
 
 @MainActor
@@ -21,8 +21,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.close()
         }
 
-        if UserDefaults.standard.object(forKey: NotificationManager.enabledKey) as? Bool ?? true {
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        if UserDefaults.standard.object(forKey: NotificationManager.enabledKey)
+            as? Bool ?? true
+        {
+            UNUserNotificationCenter.current().requestAuthorization(options: [
+                .alert, .sound,
+            ]) { _, _ in }
         }
 
         self.setupMenu()
@@ -38,7 +42,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(menuItem)
 
-        let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        let statusItem = NSStatusBar.system.statusItem(
+            withLength: NSStatusItem.variableLength
+        )
         statusItem.menu = menu
         self.statusItem = statusItem
 
@@ -55,7 +61,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func resizeGlyph() {
-        self.statusItem?.length = self.engine.metrics == nil ? 72 : POPUP_VIEW_HEIGHT * 10
+        self.statusItem?.length =
+            self.engine.metrics == nil ? 72 : POPUP_VIEW_HEIGHT * 10
     }
 
     private func observeGlyphWidth() {

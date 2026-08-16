@@ -36,19 +36,31 @@ class Disk {
 
     func updateDiskSpaceStats() throws {
         let fileManager = FileManager.default
-        let paths = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: [.volumeNameKey], options: [.skipHiddenVolumes])!
+        let paths = fileManager.mountedVolumeURLs(
+            includingResourceValuesForKeys: [.volumeNameKey],
+            options: [.skipHiddenVolumes]
+        )!
 
         guard let session = DASessionCreate(kCFAllocatorDefault) else {
-            throw ServiceError.unexpectedError(msg: "Failed to create DASession")
+            throw ServiceError.unexpectedError(
+                msg: "Failed to create DASession"
+            )
         }
 
         var disks: [String: Bool] = [:]
         for url in paths {
-            if url.pathComponents.count != 1 && !(url.pathComponents.count > 1 && url.pathComponents[1] == "Volumes") {
+            if url.pathComponents.count != 1
+                && !(url.pathComponents.count > 1
+                    && url.pathComponents[1] == "Volumes")
+            {
                 continue
             }
 
-            if let disk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url as CFURL) {
+            if let disk = DADiskCreateFromVolumePath(
+                kCFAllocatorDefault,
+                session,
+                url as CFURL
+            ) {
                 if let diskName = DADiskGetBSDName(disk) {
                     let bsdName = String(cString: diskName)
                     disks[bsdName] = true
@@ -64,7 +76,9 @@ class Disk {
                     if var d = self.getDriveDetails(disk: disk) {
                         if let path = d.path {
                             d.free = try self.getFreeSpaceInBytes(path: path)
-                            d.size = try self.getTotalDiskSpaceInBytes(path: path)
+                            d.size = try self.getTotalDiskSpaceInBytes(
+                                path: path
+                            )
                         }
                         if d.size == 0 {
                             continue
@@ -87,7 +101,7 @@ class Disk {
         return self.diskMap
     }
 
-    func readDriveStats() -> [String : (Int64, Int64)] {
+    func readDriveStats() -> [String: (Int64, Int64)] {
         var res: [String: (Int64, Int64)] = [:]
 
         for (name, var disk) in self.diskMap {
@@ -95,9 +109,13 @@ class Disk {
                 continue
             }
 
-            if let statistics = props.object(forKey: "Statistics") as? NSDictionary {
-                let readBytes = statistics.object(forKey: "Bytes (Read)") as? Int64 ?? 0
-                let writeBytes = statistics.object(forKey: "Bytes (Write)") as? Int64 ?? 0
+            if let statistics = props.object(forKey: "Statistics")
+                as? NSDictionary
+            {
+                let readBytes =
+                    statistics.object(forKey: "Bytes (Read)") as? Int64 ?? 0
+                let writeBytes =
+                    statistics.object(forKey: "Bytes (Write)") as? Int64 ?? 0
 
                 var read = Int64(0)
                 var write = Int64(0)
@@ -120,37 +138,52 @@ class Disk {
     private func getDriveDetails(disk: DADisk) -> Drive? {
         var d = Drive()
 
-        d.BSDName = if let name = DADiskGetBSDName(disk) {
-            String(cString: name)
-        } else {
-            "Unknown disk"
-        }
+        d.BSDName =
+            if let name = DADiskGetBSDName(disk) {
+                String(cString: name)
+            } else {
+                "Unknown disk"
+            }
 
-        guard let diskDescription = DADiskCopyDescription(disk) as? [String: Any] else {
+        guard
+            let diskDescription = DADiskCopyDescription(disk) as? [String: Any]
+        else {
             return nil
         }
 
         if let uuid = diskDescription[kDADiskDescriptionMediaUUIDKey as String] {
-            d.uuid = CFUUIDCreateString(kCFAllocatorDefault, (uuid as! CFUUID)) as String
+            d.uuid =
+                CFUUIDCreateString(kCFAllocatorDefault, (uuid as! CFUUID))
+                as String
         }
-        if let media = diskDescription[kDADiskDescriptionVolumeNameKey as String] {
+        if let media = diskDescription[
+            kDADiskDescriptionVolumeNameKey as String
+        ] {
             d.mediaName = media as! String
             if d.mediaName == "Recovery" {
                 return nil
             }
         }
         if d.mediaName.isEmpty {
-            if let media = diskDescription[kDADiskDescriptionMediaNameKey as String] {
+            if let media = diskDescription[
+                kDADiskDescriptionMediaNameKey as String
+            ] {
                 d.mediaName = media as! String
                 if d.mediaName == "Recovery" {
                     return nil
                 }
             }
         }
-        if let model = diskDescription[kDADiskDescriptionDeviceModelKey as String] {
-            d.model = (model as! String).trimmingCharacters(in: .whitespacesAndNewlines)
+        if let model = diskDescription[
+            kDADiskDescriptionDeviceModelKey as String
+        ] {
+            d.model = (model as! String).trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
         }
-        if let proto = diskDescription[kDADiskDescriptionDeviceProtocolKey as String] {
+        if let proto = diskDescription[
+            kDADiskDescriptionDeviceProtocolKey as String
+        ] {
             d.connectionType = proto as! String
         }
         if let path = diskDescription[kDADiskDescriptionVolumePathKey as String] {
@@ -168,7 +201,9 @@ class Disk {
                 }
             }
         }
-        if let volumeKind = diskDescription[kDADiskDescriptionVolumeKindKey as String] {
+        if let volumeKind = diskDescription[
+            kDADiskDescriptionVolumeKindKey as String
+        ] {
             d.fileSystem = volumeKind as! String
         }
 
@@ -176,7 +211,10 @@ class Disk {
             return nil
         }
         let partitionLevel = d.BSDName.filter { "0"..."9" ~= $0 }.count
-        if let parent = getDeviceIOParent(DADiskCopyIOMedia(disk), level: Int(partitionLevel)) {
+        if let parent = getDeviceIOParent(
+            DADiskCopyIOMedia(disk),
+            level: Int(partitionLevel)
+        ) {
             d.parent = parent
         }
 
@@ -186,22 +224,34 @@ class Disk {
     private func getFreeSpaceInBytes(path: URL) throws -> Int64 {
         do {
             if let url = URL(string: path.absoluteString) {
-                let values = try url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
-                if let capacity = values.volumeAvailableCapacityForImportantUsage, capacity != 0 {
+                let values = try url.resourceValues(forKeys: [
+                    .volumeAvailableCapacityForImportantUsageKey
+                ])
+                if let capacity = values
+                    .volumeAvailableCapacityForImportantUsage, capacity != 0
+                {
                     return capacity
                 }
             }
         } catch {
-            throw ServiceError.unexpectedError(msg: "Failed to read free space [0]: \(error)")
+            throw ServiceError.unexpectedError(
+                msg: "Failed to read free space [0]: \(error)"
+            )
         }
 
         do {
-            let systemAttributes = try FileManager.default.attributesOfFileSystem(forPath: path.path)
-            if let freeSpace = (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?.int64Value {
+            let systemAttributes = try FileManager.default
+                .attributesOfFileSystem(forPath: path.path)
+            if let freeSpace =
+                (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?
+                .int64Value
+            {
                 return freeSpace
             }
         } catch {
-            throw ServiceError.unexpectedError(msg: "Failed to read free space [1]: \(error)")
+            throw ServiceError.unexpectedError(
+                msg: "Failed to read free space [1]: \(error)"
+            )
         }
 
         return 0
@@ -209,12 +259,18 @@ class Disk {
 
     private func getTotalDiskSpaceInBytes(path: URL) throws -> Int64 {
         do {
-            let systemAttributes = try FileManager.default.attributesOfFileSystem(forPath: path.path)
-            if let totalSpace = (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?.int64Value {
+            let systemAttributes = try FileManager.default
+                .attributesOfFileSystem(forPath: path.path)
+            if let totalSpace =
+                (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?
+                .int64Value
+            {
                 return totalSpace
             }
         } catch {
-            throw ServiceError.unexpectedError(msg: "Failed to read total space: \(error)")
+            throw ServiceError.unexpectedError(
+                msg: "Failed to read total space: \(error)"
+            )
         }
 
         return 0

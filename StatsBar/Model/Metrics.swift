@@ -5,8 +5,8 @@
 //  Created by Shashank on 14/11/24.
 //
 
-import Foundation
 import CoreFoundation
+import Foundation
 import IOKit
 
 struct Metrics {
@@ -25,7 +25,21 @@ struct Metrics {
     let networkUsage: (upload: Int64, download: Int64)
     let diskUsage: [String: (read: Int64, write: Int64)]
 
-    init(eCpuUsage: (UInt32, Float32), pCpuUsage: (UInt32, Float32), eCores: [Float32], pCores: [Float32], gpuUsage: (UInt32, Float32), cpuPower: Float32, gpuPower: Float32, anePower: Float32, sysPower: Float32, memUsage: (UInt64, UInt64), swapUsage: (UInt64, UInt64), networkUsage: (Int64, Int64), diskUsage: [String: (read: Int64, write: Int64)]) {
+    init(
+        eCpuUsage: (UInt32, Float32),
+        pCpuUsage: (UInt32, Float32),
+        eCores: [Float32],
+        pCores: [Float32],
+        gpuUsage: (UInt32, Float32),
+        cpuPower: Float32,
+        gpuPower: Float32,
+        anePower: Float32,
+        sysPower: Float32,
+        memUsage: (UInt64, UInt64),
+        swapUsage: (UInt64, UInt64),
+        networkUsage: (Int64, Int64),
+        diskUsage: [String: (read: Int64, write: Int64)]
+    ) {
         self.eCpuUsage = eCpuUsage
         self.pCpuUsage = pCpuUsage
         self.eCores = eCores
@@ -43,7 +57,10 @@ struct Metrics {
     }
 
     func getCPUFreqs() -> [Double] {
-        return [Double(self.eCpuUsage.0) / 1000.0, Double(self.pCpuUsage.0) / 1000.0]
+        return [
+            Double(self.eCpuUsage.0) / 1000.0,
+            Double(self.pCpuUsage.0) / 1000.0,
+        ]
     }
 
     func getCPUUsage() -> Double {
@@ -54,11 +71,15 @@ struct Metrics {
     }
 
     func getECPUInfo() -> [Double] {
-        return [Double(self.eCpuUsage.1 * 100), Double(self.eCpuUsage.0) / 1000.0]
+        return [
+            Double(self.eCpuUsage.1 * 100), Double(self.eCpuUsage.0) / 1000.0,
+        ]
     }
 
     func getPCPUInfo() -> [Double] {
-        return [Double(self.pCpuUsage.1 * 100), Double(self.pCpuUsage.0) / 1000.0]
+        return [
+            Double(self.pCpuUsage.1 * 100), Double(self.pCpuUsage.0) / 1000.0,
+        ]
     }
 
     func getGPUFreq() -> Double {
@@ -83,7 +104,8 @@ struct Metrics {
 
     func getSwapUsage() -> Double {
         let used = self.getSwapUsed()
-        return !used.isNaN && used > 0.0 ? (used * 100) / Double(self.getTotalSwap()) : 0
+        return !used.isNaN && used > 0.0
+            ? (used * 100) / Double(self.getTotalSwap()) : 0
     }
 
     func getSwapUsed() -> Double {

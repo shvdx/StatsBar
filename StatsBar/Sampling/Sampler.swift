@@ -69,16 +69,26 @@ struct Sampler {
 
         for sample in samples {
             if sample.group == "CPU Stats" && sample.subGroup == CPU_FREQ_SUBG {
-                if sample.channel.starts(with: "ECPU") && eCpuCounter < eCores.count {
-                    let info = self.calculateFrequencies(dict: sample.delta, freqs: self.socInfo.eCpuFreqs)
+                if sample.channel.starts(with: "ECPU")
+                    && eCpuCounter < eCores.count
+                {
+                    let info = self.calculateFrequencies(
+                        dict: sample.delta,
+                        freqs: self.socInfo.eCpuFreqs
+                    )
                     eCpuUsages.append(info)
                     eCores[eCpuCounter] = info.usage
                     eCpuCounter += 1
                     continue
                 }
 
-                if sample.channel.starts(with: "PCPU") && pCpuCounter < pCores.count {
-                    let info = self.calculateFrequencies(dict: sample.delta, freqs: self.socInfo.pCpuFreqs)
+                if sample.channel.starts(with: "PCPU")
+                    && pCpuCounter < pCores.count
+                {
+                    let info = self.calculateFrequencies(
+                        dict: sample.delta,
+                        freqs: self.socInfo.pCpuFreqs
+                    )
                     pCpuUsages.append(info)
                     pCores[pCpuCounter] = info.usage
                     pCpuCounter += 1
@@ -86,13 +96,22 @@ struct Sampler {
                 }
             }
 
-            if sample.group == "GPU Stats" && sample.subGroup == GPU_FREQ_SUBG && sample.channel == "GPUPH" {
-                gpuUsage = self.calculateFrequencies(dict: sample.delta, freqs: Array(self.socInfo.gpuFreqs.dropFirst(1)))
+            if sample.group == "GPU Stats" && sample.subGroup == GPU_FREQ_SUBG
+                && sample.channel == "GPUPH"
+            {
+                gpuUsage = self.calculateFrequencies(
+                    dict: sample.delta,
+                    freqs: Array(self.socInfo.gpuFreqs.dropFirst(1))
+                )
                 continue
             }
 
             if sample.group == "Energy Model" {
-                let watts = self.calculateWatts(dict: sample.delta, unit: sample.unit, duration: UInt64(dt.magnitude))
+                let watts = self.calculateWatts(
+                    dict: sample.delta,
+                    unit: sample.unit,
+                    duration: UInt64(dt.magnitude)
+                )
                 if sample.channel == "CPU Energy" {
                     cpuPower += watts
                 }
@@ -106,8 +125,14 @@ struct Sampler {
         }
 
         return CoreSample(
-            eCpuUsage: self.calculateAggregateFrequencies(items: eCpuUsages, freqs: self.socInfo.eCpuFreqs),
-            pCpuUsage: self.calculateAggregateFrequencies(items: pCpuUsages, freqs: self.socInfo.pCpuFreqs),
+            eCpuUsage: self.calculateAggregateFrequencies(
+                items: eCpuUsages,
+                freqs: self.socInfo.eCpuFreqs
+            ),
+            pCpuUsage: self.calculateAggregateFrequencies(
+                items: pCpuUsages,
+                freqs: self.socInfo.pCpuFreqs
+            ),
             eCores: eCores,
             pCores: pCores,
             gpuUsage: gpuUsage,
@@ -131,11 +156,13 @@ struct Sampler {
 
         return Metrics(
             eCpuUsage: (
-                cores.reduce(0, { $0 + $1.eCpuUsage.0 }) / UInt32(Self.measures),
+                cores.reduce(0, { $0 + $1.eCpuUsage.0 })
+                    / UInt32(Self.measures),
                 cores.reduce(0, { $0 + $1.eCpuUsage.1 }) / measures
             ),
             pCpuUsage: (
-                cores.reduce(0, { $0 + $1.pCpuUsage.0 }) / UInt32(Self.measures),
+                cores.reduce(0, { $0 + $1.pCpuUsage.0 })
+                    / UInt32(Self.measures),
                 cores.reduce(0, { $0 + $1.pCpuUsage.1 }) / measures
             ),
             eCores: eCores,
@@ -155,7 +182,9 @@ struct Sampler {
         )
     }
 
-    private func calculateFrequencies(dict: CFDictionary, freqs: [UInt32]) -> (freq: UInt32, usage: Float32) {
+    private func calculateFrequencies(dict: CFDictionary, freqs: [UInt32]) -> (
+        freq: UInt32, usage: Float32
+    ) {
         let items = getResidencies(dict: dict)
 
         let offset = items.firstIndex { (x, _) in
@@ -179,20 +208,34 @@ struct Sampler {
         }
 
         let usageRatio = total == 0 ? 0 : usage / total
-        let fromMax = (max(avgFreq, Double(minFreq)) * usageRatio) / Double(maxFreq)
+        let fromMax =
+            (max(avgFreq, Double(minFreq)) * usageRatio) / Double(maxFreq)
 
         return (UInt32(avgFreq), Float32(fromMax))
     }
 
-    private func calculateAggregateFrequencies(items: [(UInt32, Float32)], freqs: [UInt32]) -> (UInt32, Float32) {
-        let avgFreq = items.count == 0 ? 0 : (items.reduce(0.0, { $0 + Float32($1.0) }) / Float32(items.count))
-        let avgPrec = items.count == 0 ? 0 : (items.reduce(0.0, { $0 + Float32($1.1) }) / Float32(items.count))
+    private func calculateAggregateFrequencies(
+        items: [(UInt32, Float32)],
+        freqs: [UInt32]
+    ) -> (UInt32, Float32) {
+        let avgFreq =
+            items.count == 0
+            ? 0
+            : (items.reduce(0.0, { $0 + Float32($1.0) }) / Float32(items.count))
+        let avgPrec =
+            items.count == 0
+            ? 0
+            : (items.reduce(0.0, { $0 + Float32($1.1) }) / Float32(items.count))
         let minFreq = Float32(freqs.first ?? 0)
 
         return (UInt32(max(avgFreq, minFreq)), avgPrec)
     }
 
-    private func calculateWatts(dict: CFDictionary, unit: String, duration: UInt64) -> Float32 {
+    private func calculateWatts(
+        dict: CFDictionary,
+        unit: String,
+        duration: UInt64
+    ) -> Float32 {
         let val = IOReportSimpleGetIntegerValue(dict, 0)
         let watts = Float32(val) / (Float32(duration) / 1000.0)
         switch unit {
@@ -209,12 +252,14 @@ struct Sampler {
     }
 
     private func getResidencies(dict: CFDictionary) -> [(ns: String, f: Int64)] {
-        let count = IOReportStateGetCount(dict);
+        let count = IOReportStateGetCount(dict)
 
         var res = [(String, Int64)]()
 
         for i in 0..<count {
-            let name = IOReportStateGetNameForIndex(dict, i)?.takeUnretainedValue() ?? ("" as CFString)
+            let name =
+                IOReportStateGetNameForIndex(dict, i)?.takeUnretainedValue()
+                ?? ("" as CFString)
             let val = IOReportStateGetResidency(dict, i)
             res.append((name as String, val))
         }

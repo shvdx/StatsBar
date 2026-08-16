@@ -5,9 +5,9 @@
 //  Created by Shashank Verma on 09/07/25.
 //
 
-import SwiftUI
 import Charts
 import Collections
+import SwiftUI
 
 struct NetworkView: View {
     @Environment(\.self) var environment
@@ -27,7 +27,15 @@ struct NetworkView: View {
     private var graphShape = RoundedRectangle(cornerRadius: 12)
 
     private func getNetworkGraphDomain() -> [Int64] {
-        let maxUsage = self.usageGraph.reduce(Int64(0)) { max($0, max(abs($1.networkUsage[0].value), abs($1.networkUsage[1].value))) }
+        let maxUsage = self.usageGraph.reduce(Int64(0)) {
+            max(
+                $0,
+                max(
+                    abs($1.networkUsage[0].value),
+                    abs($1.networkUsage[1].value)
+                )
+            )
+        }
         return [maxUsage * -1, maxUsage]
     }
 
@@ -40,36 +48,64 @@ struct NetworkView: View {
 
             Chart {
                 ForEach(self.usageGraph, id: \.id) { usageInfo in
-                    ForEach(usageInfo.networkUsage, id: \.type) { networkUsage in
+                    ForEach(usageInfo.networkUsage, id: \.type) {
+                        networkUsage in
                         AreaMark(
                             x: .value("X", usageInfo.id),
                             y: .value("Y", networkUsage.value)
                         )
                         .interpolationMethod(.catmullRom)
-                        .foregroundStyle(by: .value("Bytes type", networkUsage.type))
+                        .foregroundStyle(
+                            by: .value("Bytes type", networkUsage.type)
+                        )
                     }
                 }
 
                 if let networkSelection {
-                    if let usage = (self.usageGraph.first { $0.id == networkSelection }) {
+                    if let usage =
+                        (self.usageGraph.first { $0.id == networkSelection })
+                    {
                         RuleMark(x: .value("X", networkSelection), yStart: 0)
                             .foregroundStyle(
                                 LinearGradient(
                                     stops: [
-                                        Gradient.Stop(color: .purple, location: 0.0),
-                                        Gradient.Stop(color: .purple, location: 0.5),
-                                        Gradient.Stop(color: .indigo, location: 0.50001),
-                                        Gradient.Stop(color: .indigo, location: 1.0),
+                                        Gradient.Stop(
+                                            color: .purple,
+                                            location: 0.0
+                                        ),
+                                        Gradient.Stop(
+                                            color: .purple,
+                                            location: 0.5
+                                        ),
+                                        Gradient.Stop(
+                                            color: .indigo,
+                                            location: 0.50001
+                                        ),
+                                        Gradient.Stop(
+                                            color: .indigo,
+                                            location: 1.0
+                                        ),
                                     ],
                                     startPoint: .bottom,
                                     endPoint: .top
                                 )
                             )
-                            .annotation(position: .top, overflowResolution: .init(x: .fit, y: .fit)) {
+                            .annotation(
+                                position: .top,
+                                overflowResolution: .init(x: .fit, y: .fit)
+                            ) {
                                 ZStack {
-                                    Text(Units(bytes: usage.networkUsage[1].value).getReadableString())
-                                        .font(.callout)
-                                        .foregroundStyle(Color.indigo.adaptedTextColor(self.environment))
+                                    Text(
+                                        Units(
+                                            bytes: usage.networkUsage[1].value
+                                        ).getReadableString()
+                                    )
+                                    .font(.callout)
+                                    .foregroundStyle(
+                                        Color.indigo.adaptedTextColor(
+                                            self.environment
+                                        )
+                                    )
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
@@ -78,11 +114,24 @@ struct NetworkView: View {
                                         .foregroundStyle(Color.indigo)
                                 }
                             }
-                            .annotation(position: .bottom, overflowResolution: .init(x: .fit, y: .fit)) {
+                            .annotation(
+                                position: .bottom,
+                                overflowResolution: .init(x: .fit, y: .fit)
+                            ) {
                                 ZStack {
-                                    Text(Units(bytes: abs(usage.networkUsage[0].value)).getReadableString())
-                                        .font(.callout)
-                                        .foregroundStyle(Color.purple.adaptedTextColor(self.environment))
+                                    Text(
+                                        Units(
+                                            bytes: abs(
+                                                usage.networkUsage[0].value
+                                            )
+                                        ).getReadableString()
+                                    )
+                                    .font(.callout)
+                                    .foregroundStyle(
+                                        Color.purple.adaptedTextColor(
+                                            self.environment
+                                        )
+                                    )
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
@@ -101,7 +150,9 @@ struct NetworkView: View {
             ])
             .chartXAxis(.hidden)
             .chartYAxis(.hidden)
-            .chartXScale(domain: [self.usageGraph.first?.id ?? 0, self.usageGraph.last?.id ?? 0])
+            .chartXScale(domain: [
+                self.usageGraph.first?.id ?? 0, self.usageGraph.last?.id ?? 0,
+            ])
             .chartYScale(domain: getNetworkGraphDomain())
             .chartXSelection(value: $networkSelection)
             .clipShape(self.graphShape)
@@ -110,12 +161,20 @@ struct NetworkView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)).foregroundStyle(Color.indigo).frame(width: 10, height: 10, alignment: .center)
+                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                    .foregroundStyle(Color.indigo).frame(
+                        width: 10,
+                        height: 10,
+                        alignment: .center
+                    )
                 Text("Download")
                     .font(.callout)
                 Spacer()
-                Text(Units(bytes: metrics.networkUsage.download).getReadableString())
-                    .font(.callout)
+                Text(
+                    Units(bytes: metrics.networkUsage.download)
+                        .getReadableString()
+                )
+                .font(.callout)
             }
             .padding(.vertical, 2)
 
@@ -126,15 +185,21 @@ struct NetworkView: View {
                 Text("Upload")
                     .font(.callout)
                 Spacer()
-                Text(Units(bytes: metrics.networkUsage.upload).getReadableString())
-                    .font(.callout)
+                Text(
+                    Units(bytes: metrics.networkUsage.upload)
+                        .getReadableString()
+                )
+                .font(.callout)
             }
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                Image(systemName: (network?.getConnType() ?? .other).getSystemIcon())
-                    .frame(width: 8, height: 8, alignment: .center)
-                    .padding(.leading, 2)
+                Image(
+                    systemName: (network?.getConnType() ?? .other)
+                        .getSystemIcon()
+                )
+                .frame(width: 8, height: 8, alignment: .center)
+                .padding(.leading, 2)
                 Text("Local IP")
                     .font(.callout)
                 Spacer()

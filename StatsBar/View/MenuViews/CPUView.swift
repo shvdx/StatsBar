@@ -5,9 +5,9 @@
 //  Created by Shashank Verma on 09/07/25.
 //
 
-import SwiftUI
 import Charts
 import Collections
+import SwiftUI
 
 struct CPUView: View {
     @Environment(\.self) var environment
@@ -30,10 +30,12 @@ struct CPUView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("\(self.socInfo?.chipName ?? "") (\(self.socInfo?.eCores ?? 0)E + \(self.socInfo?.pCores ?? 0)P + \(self.socInfo?.gpuCores ?? 0)GPU)")
-                .font(.callout)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(
+                "\(self.socInfo?.chipName ?? "") (\(self.socInfo?.eCores ?? 0)E + \(self.socInfo?.pCores ?? 0)P + \(self.socInfo?.gpuCores ?? 0)GPU)"
+            )
+            .font(.callout)
+            .fontWeight(.semibold)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 4) {
                 VStack(spacing: 4) {
@@ -48,12 +50,28 @@ struct CPUView: View {
                         if let eCpuSelection {
                             RuleMark(x: .value("X", eCpuSelection))
                                 .foregroundStyle(Color.blue)
-                                .annotation(position: .top, overflowResolution: .init(x: .fit, y: .fit)) {
+                                .annotation(
+                                    position: .top,
+                                    overflowResolution: .init(x: .fit, y: .fit)
+                                ) {
                                     ZStack {
-                                        if let usage = (self.usageGraph.first { $0.id == eCpuSelection }) {
-                                            Text(String(format: "%.2f%%  %.2f GHz", arguments: usage.eCpuUsage))
-                                                .font(.callout)
-                                                .foregroundStyle(Color.blue.adaptedTextColor(self.environment))
+                                        if let usage =
+                                            (self.usageGraph.first {
+                                                $0.id == eCpuSelection
+                                            })
+                                        {
+                                            Text(
+                                                String(
+                                                    format: "%.2f%%  %.2f GHz",
+                                                    arguments: usage.eCpuUsage
+                                                )
+                                            )
+                                            .font(.callout)
+                                            .foregroundStyle(
+                                                Color.blue.adaptedTextColor(
+                                                    self.environment
+                                                )
+                                            )
                                         }
                                     }
                                     .padding(.vertical, 4)
@@ -67,7 +85,10 @@ struct CPUView: View {
                     }
                     .chartXAxis(.hidden)
                     .chartYAxis(.hidden)
-                    .chartXScale(domain: [self.usageGraph.first?.id ?? 0, self.usageGraph.last?.id ?? 0])
+                    .chartXScale(domain: [
+                        self.usageGraph.first?.id ?? 0,
+                        self.usageGraph.last?.id ?? 0,
+                    ])
                     .chartYScale(domain: [0, 100])
                     .chartXSelection(value: $eCpuSelection)
                     .clipShape(self.graphShape)
@@ -86,12 +107,28 @@ struct CPUView: View {
                         if let pCpuSelection {
                             RuleMark(x: .value("X", pCpuSelection))
                                 .foregroundStyle(Color.green)
-                                .annotation(position: .top, overflowResolution: .init(x: .fit, y: .fit)) {
+                                .annotation(
+                                    position: .top,
+                                    overflowResolution: .init(x: .fit, y: .fit)
+                                ) {
                                     ZStack {
-                                        if let usage = (self.usageGraph.first { $0.id == pCpuSelection }) {
-                                            Text(String(format: "%.2f%%  %.2f GHz", arguments: usage.pCpuUsage))
-                                                .font(.callout)
-                                                .foregroundStyle(Color.green.adaptedTextColor(self.environment))
+                                        if let usage =
+                                            (self.usageGraph.first {
+                                                $0.id == pCpuSelection
+                                            })
+                                        {
+                                            Text(
+                                                String(
+                                                    format: "%.2f%%  %.2f GHz",
+                                                    arguments: usage.pCpuUsage
+                                                )
+                                            )
+                                            .font(.callout)
+                                            .foregroundStyle(
+                                                Color.green.adaptedTextColor(
+                                                    self.environment
+                                                )
+                                            )
                                         }
                                     }
                                     .padding(.vertical, 4)
@@ -105,7 +142,10 @@ struct CPUView: View {
                     }
                     .chartXAxis(.hidden)
                     .chartYAxis(.hidden)
-                    .chartXScale(domain: [self.usageGraph.first?.id ?? 0, self.usageGraph.last?.id ?? 0])
+                    .chartXScale(domain: [
+                        self.usageGraph.first?.id ?? 0,
+                        self.usageGraph.last?.id ?? 0,
+                    ])
                     .chartYScale(domain: [0, 100])
                     .chartXSelection(value: $pCpuSelection)
                     .clipShape(self.graphShape)
@@ -125,12 +165,28 @@ struct CPUView: View {
                     if let gpuSelection {
                         RuleMark(x: .value("X", gpuSelection))
                             .foregroundStyle(Color.orange)
-                            .annotation(position: .top, overflowResolution: .init(x: .fit, y: .fit)) {
+                            .annotation(
+                                position: .top,
+                                overflowResolution: .init(x: .fit, y: .fit)
+                            ) {
                                 ZStack {
-                                    if let usage = (self.usageGraph.first { $0.id == gpuSelection }) {
-                                        Text(String(format: "%.2f%%  %.2f GHz", arguments: usage.gpuUsage))
-                                            .font(.callout)
-                                            .foregroundStyle(Color.orange.adaptedTextColor(self.environment))
+                                    if let usage =
+                                        (self.usageGraph.first {
+                                            $0.id == gpuSelection
+                                        })
+                                    {
+                                        Text(
+                                            String(
+                                                format: "%.2f%%  %.2f GHz",
+                                                arguments: usage.gpuUsage
+                                            )
+                                        )
+                                        .font(.callout)
+                                        .foregroundStyle(
+                                            Color.orange.adaptedTextColor(
+                                                self.environment
+                                            )
+                                        )
                                     }
                                 }
                                 .padding(.vertical, 4)
@@ -144,7 +200,10 @@ struct CPUView: View {
                 }
                 .chartXAxis(.hidden)
                 .chartYAxis(.hidden)
-                .chartXScale(domain: [self.usageGraph.first?.id ?? 0, self.usageGraph.last?.id ?? 0])
+                .chartXScale(domain: [
+                    self.usageGraph.first?.id ?? 0,
+                    self.usageGraph.last?.id ?? 0,
+                ])
                 .chartYScale(domain: [0, 100])
                 .chartXSelection(value: $gpuSelection)
                 .clipShape(self.graphShape)
@@ -160,8 +219,13 @@ struct CPUView: View {
                 Text("E-CPU")
                     .font(.callout)
                 Spacer()
-                Text(String(format: "%.2f%%  %.2f GHz", arguments: metrics.getECPUInfo()))
-                    .font(.callout)
+                Text(
+                    String(
+                        format: "%.2f%%  %.2f GHz",
+                        arguments: metrics.getECPUInfo()
+                    )
+                )
+                .font(.callout)
             }
             .padding(.vertical, 2)
 
@@ -172,8 +236,13 @@ struct CPUView: View {
                 Text("P-CPU")
                     .font(.callout)
                 Spacer()
-                Text(String(format: "%.2f%%  %.2f GHz", arguments: metrics.getPCPUInfo()))
-                    .font(.callout)
+                Text(
+                    String(
+                        format: "%.2f%%  %.2f GHz",
+                        arguments: metrics.getPCPUInfo()
+                    )
+                )
+                .font(.callout)
             }
             .padding(.vertical, 2)
 
@@ -184,8 +253,15 @@ struct CPUView: View {
                 Text("GPU")
                     .font(.callout)
                 Spacer()
-                Text(String(format: "%.2f%%  %.2f GHz", arguments: [metrics.getGPUUsage(), metrics.getGPUFreq()]))
-                    .font(.callout)
+                Text(
+                    String(
+                        format: "%.2f%%  %.2f GHz",
+                        arguments: [
+                            metrics.getGPUUsage(), metrics.getGPUFreq(),
+                        ]
+                    )
+                )
+                .font(.callout)
             }
             .padding(.vertical, 2)
 

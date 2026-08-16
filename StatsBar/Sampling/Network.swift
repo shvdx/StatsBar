@@ -7,10 +7,10 @@
 //  Referenced: https://github.com/exelban/stats
 //
 
-import Foundation
-import SystemConfiguration
 import CoreWLAN
+import Foundation
 import Network
+import SystemConfiguration
 
 enum NetworkType: String, Codable {
     case wifi
@@ -58,13 +58,17 @@ class Network {
     private var prevBandwidth: Bandwidth?
 
     init() {
-        let defaultInfName = if let global = SCDynamicStoreCopyValue(nil, "State:/Network/Global/IPv4" as CFString),
-                                let name = global["PrimaryInterface"] as? String
-        {
-            name
-        } else {
-            ""
-        }
+        let defaultInfName =
+            if let global = SCDynamicStoreCopyValue(
+                nil,
+                "State:/Network/Global/IPv4" as CFString
+            ),
+                let name = global["PrimaryInterface"] as? String
+            {
+                name
+            } else {
+                ""
+            }
         self.infName = defaultInfName
 
         let interfaces = SCNetworkInterfaceCopyAll() as NSArray
@@ -80,8 +84,12 @@ class Network {
         let interface = defInf as! SCNetworkInterface
 
         let bsdName = SCNetworkInterfaceGetBSDName(interface) as? String ?? ""
-        let displayName = SCNetworkInterfaceGetLocalizedDisplayName(interface) as? String ?? ""
-        let address = SCNetworkInterfaceGetHardwareAddressString(interface) as? String ?? ""
+        let displayName =
+            SCNetworkInterfaceGetLocalizedDisplayName(interface) as? String
+            ?? ""
+        let address =
+            SCNetworkInterfaceGetHardwareAddressString(interface) as? String
+            ?? ""
 
         let type = SCNetworkInterfaceGetInterfaceType(interface)
         var nType = NetworkType.other
@@ -96,7 +104,11 @@ class Network {
             nType = .other
         }
         self.connType = nType
-        self.interface = NetworkInterface(bsdName: bsdName, address: address, displayName: displayName)
+        self.interface = NetworkInterface(
+            bsdName: bsdName,
+            address: address,
+            displayName: displayName
+        )
     }
 
     func readStats() throws -> (Int64, Int64) {
@@ -111,7 +123,10 @@ class Network {
             self.prevBandwidth?.upload = current.upload
             self.prevBandwidth?.download = current.download
         } else {
-            self.prevBandwidth = Bandwidth(upload: current.upload, download: current.download)
+            self.prevBandwidth = Bandwidth(
+                upload: current.upload,
+                download: current.download
+            )
         }
 
         self.readLocalIP()
@@ -127,7 +142,9 @@ class Network {
         self.connType ?? .other
     }
 
-    private func readInterfaceBandwidth() throws -> (upload: Int64, download: Int64) {
+    private func readInterfaceBandwidth() throws -> (
+        upload: Int64, download: Int64
+    ) {
         if self.infName == "" {
             return (0, 0)
         }
@@ -140,7 +157,9 @@ class Network {
 
         var ret = sysctl(&ifmib, u_int(ifmib.count), nil, &len, nil, 0)
         if ret != 0 {
-            throw ServiceError.unexpectedError(msg: "Failed to get ifmib length - \(ret)")
+            throw ServiceError.unexpectedError(
+                msg: "Failed to get ifmib length - \(ret)"
+            )
         }
 
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: len)
@@ -148,18 +167,27 @@ class Network {
 
         ret = sysctl(&ifmib, u_int(ifmib.count), buffer, &len, nil, 0)
         if ret != 0 {
-            throw ServiceError.unexpectedError(msg: "Failed to read ifmib buffer - \(ret)")
+            throw ServiceError.unexpectedError(
+                msg: "Failed to read ifmib buffer - \(ret)"
+            )
         }
 
         var ptr = buffer
         let end = buffer + len
         while ptr < end {
-            let ifm = ptr.withMemoryRebound(to: if_msghdr.self, capacity: 1) { $0.pointee }
+            let ifm = ptr.withMemoryRebound(to: if_msghdr.self, capacity: 1) {
+                $0.pointee
+            }
             if ifm.ifm_type == RTM_IFINFO2 {
-                let if2 = ptr.withMemoryRebound(to: if_msghdr2.self, capacity: 0) { $0.pointee }
+                let if2 = ptr.withMemoryRebound(
+                    to: if_msghdr2.self,
+                    capacity: 0
+                ) { $0.pointee }
 
                 var name = [CChar](repeating: 0, count: Int(IF_NAMESIZE))
-                if let _ = if_indextoname(UInt32(if2.ifm_index), &name), String(cString: name) == self.infName {
+                if if_indextoname(UInt32(if2.ifm_index), &name) != nil,
+                    String(cString: name) == self.infName
+                {
                     totalUpload += Int64(if2.ifm_data.ifi_obytes)
                     totalDownload += Int64(if2.ifm_data.ifi_ibytes)
                 }
@@ -178,8 +206,13 @@ class Network {
         }
         defer { freeifaddrs(interfaceAddresses) }
 
-        for inf in sequence(first: interfaceAddresses, next: { $0?.pointee.ifa_next }) {
-            guard let name = inf?.pointee.ifa_name.map({ String(cString: $0) }), name == self.infName else {
+        for inf in sequence(
+            first: interfaceAddresses,
+            next: { $0?.pointee.ifa_next }
+        ) {
+            guard let name = inf?.pointee.ifa_name.map({ String(cString: $0) }),
+                name == self.infName
+            else {
                 continue
             }
 
@@ -189,7 +222,15 @@ class Network {
             }
 
             var ip = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-            getnameinfo(&addr, socklen_t(addr.sa_len), &ip, socklen_t(ip.count), nil, 0, NI_NUMERICHOST)
+            getnameinfo(
+                &addr,
+                socklen_t(addr.sa_len),
+                &ip,
+                socklen_t(ip.count),
+                nil,
+                0,
+                NI_NUMERICHOST
+            )
             self.localIP = String(cString: ip)
         }
     }

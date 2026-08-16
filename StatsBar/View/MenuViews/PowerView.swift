@@ -29,8 +29,13 @@ struct PowerView: View {
                 Text("CPU")
                     .font(.callout)
                 Spacer()
-                Text(String(format: "%.2f W", arguments: [metrics.cpuPower / 1000.0]))
-                    .font(.callout)
+                Text(
+                    String(
+                        format: "%.2f W",
+                        arguments: [metrics.cpuPower / 1000.0]
+                    )
+                )
+                .font(.callout)
             }
 
             Divider()
@@ -39,8 +44,13 @@ struct PowerView: View {
                 Text("GPU")
                     .font(.callout)
                 Spacer()
-                Text(String(format: "%.2f W", arguments: [metrics.gpuPower / 1000.0]))
-                    .font(.callout)
+                Text(
+                    String(
+                        format: "%.2f W",
+                        arguments: [metrics.gpuPower / 1000.0]
+                    )
+                )
+                .font(.callout)
             }
 
             Divider()
@@ -49,8 +59,13 @@ struct PowerView: View {
                 Text("ANE")
                     .font(.callout)
                 Spacer()
-                Text(String(format: "%.2f W", arguments: [metrics.anePower / 1000.0]))
-                    .font(.callout)
+                Text(
+                    String(
+                        format: "%.2f W",
+                        arguments: [metrics.anePower / 1000.0]
+                    )
+                )
+                .font(.callout)
             }
         }
     }
