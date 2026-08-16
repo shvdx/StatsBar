@@ -34,7 +34,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupMenu() {
         let menuView = NSHostingView(rootView: MenuView(engine: self.engine))
-        menuView.frame = NSRect(x: 0, y: 0, width: 620, height: 620)
+        let heightMax = (NSScreen.main?.visibleFrame.height ?? 800) - 24
+        menuView.frame = NSRect(
+            x: 0,
+            y: 0,
+            width: 320,
+            height: min(800, heightMax)
+        )
 
         let menuItem = NSMenuItem()
         menuItem.view = menuView

@@ -12,61 +12,34 @@ struct PowerView: View {
     var metrics: Metrics
 
     var body: some View {
-        HStack(alignment: .center) {
-            HStack {
-                Text("Power")
-                    .font(.callout)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                Text(String(format: "%.2f W", arguments: [metrics.sysPower]))
-                    .font(.callout)
+        VStack(spacing: 6) {
+            HStack(alignment: .center) {
+                self.cell("Power", watts: metrics.sysPower, bold: true)
+                Divider()
+                self.cell("CPU", watts: metrics.cpuPower / 1000.0)
             }
 
             Divider()
 
-            HStack {
-                Text("CPU")
-                    .font(.callout)
-                Spacer()
-                Text(
-                    String(
-                        format: "%.2f W",
-                        arguments: [metrics.cpuPower / 1000.0]
-                    )
-                )
-                .font(.callout)
-            }
-
-            Divider()
-
-            HStack {
-                Text("GPU")
-                    .font(.callout)
-                Spacer()
-                Text(
-                    String(
-                        format: "%.2f W",
-                        arguments: [metrics.gpuPower / 1000.0]
-                    )
-                )
-                .font(.callout)
-            }
-
-            Divider()
-
-            HStack {
-                Text("ANE")
-                    .font(.callout)
-                Spacer()
-                Text(
-                    String(
-                        format: "%.2f W",
-                        arguments: [metrics.anePower / 1000.0]
-                    )
-                )
-                .font(.callout)
+            HStack(alignment: .center) {
+                self.cell("GPU", watts: metrics.gpuPower / 1000.0)
+                Divider()
+                self.cell("ANE", watts: metrics.anePower / 1000.0)
             }
         }
+    }
+
+    private func cell(_ title: String, watts: Float32, bold: Bool = false)
+        -> some View
+    {
+        HStack {
+            Text(title)
+                .font(.callout)
+                .fontWeight(bold ? .semibold : .regular)
+            Spacer()
+            Text(String(format: "%.2f W", arguments: [watts]))
+                .font(.callout)
+        }
+        .frame(maxWidth: .infinity)
     }
 }

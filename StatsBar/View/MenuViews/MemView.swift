@@ -199,8 +199,6 @@ struct MemView: View {
                 .font(.callout)
             }
             .padding(.vertical, 2)
-
-            Spacer()
         }
     }
 }

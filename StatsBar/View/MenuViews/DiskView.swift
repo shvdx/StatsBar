@@ -45,7 +45,7 @@ struct DiskView: View {
     }
 
     var body: some View {
-        ScrollView {
+        LazyVStack(spacing: 0) {
             ForEach(
                 Array(self.diskUsageGraph.elements.enumerated()),
                 id: \.offset
@@ -189,7 +189,7 @@ struct DiskView: View {
                     .chartXSelection(value: self.binding(disk: element.key))
                     .clipShape(self.graphShape)
                     .overlay(self.graphShape.stroke(.gray, lineWidth: 1))
-                    .frame(height: max(62, 124 / CGFloat(self.disks.count)))
+                    .frame(height: 124)
                     .padding(.vertical, 2)
 
                     HStack(alignment: .center) {
@@ -276,9 +276,7 @@ struct DiskView: View {
                         }
                     }
 
-                    Spacer()
                 }
-                .padding(.horizontal, 12)
 
                 if index != (self.disks.count - 1) {
                     Divider().padding(6)

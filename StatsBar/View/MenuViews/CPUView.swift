@@ -264,8 +264,6 @@ struct CPUView: View {
                 .font(.callout)
             }
             .padding(.vertical, 2)
-
-            Spacer()
         }
     }
 }

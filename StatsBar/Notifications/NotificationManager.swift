@@ -10,8 +10,8 @@ struct AlertThresholds {
     var cpuUsage: Double = 99.0  // %
     var memUsage: Double = 95.0  // %
     var totalPower: Float32 = 30.0  // Watts (system power)
-    var ttl: TimeInterval = 60.0  // global: no channel re-alerts within this window
-    var sustainSamples = 7  // consecutive breaches before a channel fires (~7s at 1/sec)
+    var ttl: TimeInterval = 60.0  // seconds
+    var sustainSamples = 7  // consecutive breaches
 }
 
 class NotificationManager {
@@ -47,7 +47,6 @@ class NotificationManager {
         let ram = metrics.getMemUsage()
         let power = metrics.sysPower
 
-        // Track every tick even while debounced, so a still-breaching channel re-fires at TTL lapse.
         track(key: "cpu", breached: cpu >= thresholds.cpuUsage)
         track(key: "ram", breached: ram >= thresholds.memUsage)
         track(key: "power", breached: power >= thresholds.totalPower)

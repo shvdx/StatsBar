@@ -94,61 +94,54 @@ struct MenuView: View {
             }
 
             if let metrics = self.engine.metrics {
-                Divider()
-                    .padding(.bottom, 4)
-                    .padding(.horizontal, 12)
+                ScrollView {
+                    VStack(spacing: 12) {
+                        Divider()
+                            .padding(.horizontal, 12)
 
-                // CPU and RAM
-                HStack {
-                    CPUView(
-                        socInfo: self.engine.socInfo,
-                        metrics: metrics,
-                        usageGraph: self.engine.usageGraph
-                    )
-                    .padding(.horizontal, 12)
+                        CPUView(
+                            socInfo: self.engine.socInfo,
+                            metrics: metrics,
+                            usageGraph: self.engine.usageGraph
+                        )
+                        .padding(.horizontal, 12)
 
-                    Divider()
-                        .padding(.vertical, 6)
+                        Divider()
+                            .padding(.horizontal, 12)
 
-                    MemView(
-                        metrics: metrics,
-                        usageGraph: self.engine.usageGraph
-                    )
-                    .padding(.horizontal, 12)
+                        MemView(
+                            metrics: metrics,
+                            usageGraph: self.engine.usageGraph
+                        )
+                        .padding(.horizontal, 12)
+
+                        Divider()
+                            .padding(.horizontal, 12)
+
+                        PowerView(metrics: metrics)
+                            .padding(.horizontal, 12)
+
+                        Divider()
+                            .padding(.horizontal, 12)
+
+                        NetworkView(
+                            network: self.engine.network,
+                            metrics: metrics,
+                            usageGraph: self.engine.usageGraph
+                        )
+                        .padding(.horizontal, 12)
+
+                        Divider()
+                            .padding(.horizontal, 12)
+
+                        DiskView(
+                            metrics: metrics,
+                            disks: self.engine.disks,
+                            diskUsageGraph: self.engine.diskUsageGraph
+                        )
+                        .padding(.horizontal, 12)
+                    }
                 }
-                .frame(maxHeight: .infinity)
-
-                Divider()
-                    .padding(.vertical, 3)
-                    .padding(.horizontal, 12)
-
-                // Power
-                PowerView(metrics: metrics)
-                    .padding(.horizontal, 12)
-
-                Divider()
-                    .padding(.vertical, 3)
-                    .padding(.horizontal, 12)
-
-                // Network and Disk
-                HStack {
-                    NetworkView(
-                        network: self.engine.network,
-                        metrics: metrics,
-                        usageGraph: self.engine.usageGraph
-                    )
-                    .padding(.horizontal, 12)
-
-                    Divider()
-                        .padding(.vertical, 6)
-
-                    DiskView(
-                        metrics: metrics,
-                        disks: self.engine.disks,
-                        diskUsageGraph: self.engine.diskUsageGraph
-                    )
-                }
-                .frame(maxHeight: .infinity)
             }
         }
     }
