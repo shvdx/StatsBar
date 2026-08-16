@@ -18,7 +18,6 @@ struct Metrics {
     let cpuPower: Float32
     let gpuPower: Float32
     let anePower: Float32
-    let allPower: Float32
     let sysPower: Float32
     let memUsage: (UInt64, UInt64)
     let swapUsage: (UInt64, UInt64)
@@ -48,7 +47,6 @@ struct Metrics {
         self.cpuPower = cpuPower
         self.gpuPower = gpuPower
         self.anePower = anePower
-        self.allPower = self.cpuPower + self.gpuPower + self.anePower
         self.sysPower = sysPower
         self.memUsage = memUsage
         self.swapUsage = swapUsage

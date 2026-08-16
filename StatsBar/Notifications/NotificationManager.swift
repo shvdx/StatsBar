@@ -7,12 +7,11 @@ import Foundation
 import UserNotifications
 
 struct AlertThresholds {
-    var cpuUsage: Double = 90.0  // %
-    var gpuUsage: Double = 90.0  // %
-    var memUsage: Double = 90.0  // %
-    var swapUsage: Double = 80.0  // %
-    var totalPower: Float32 = 30.0  // Watts (CPU + GPU + ANE)
-    var cooldown: TimeInterval = 60.0  // seconds between repeat alerts for the same metric
+    var cpuUsage: Double = 99.0  // %
+    var memUsage: Double = 95.0  // %
+    var totalPower: Float32 = 30.0  // Watts (system power)
+    var ttl: TimeInterval = 60.0  // global: no channel re-alerts within this window
+    var sustainSamples = 7  // consecutive breaches before a channel fires (~7s at 1/sec)
 }
 
 class NotificationManager {
@@ -29,12 +28,14 @@ class NotificationManager {
         set {
             UserDefaults.standard.set(newValue, forKey: Self.enabledKey)
             if !newValue {
-                lastNotified.removeAll()
+                breaches.removeAll()
+                lastNotified = nil
             }
         }
     }
 
-    private var lastNotified: [String: Date] = [:]
+    private var breaches: [String: Int] = [:]
+    private var lastNotified: Date?
 
     private init() {}
 
@@ -42,77 +43,70 @@ class NotificationManager {
         guard isEnabled else { return }
 
         let now = Date()
+        let cpu = metrics.getCPUUsage()
+        let ram = metrics.getMemUsage()
+        let power = metrics.sysPower
 
-        check(
-            key: "cpu",
-            condition: metrics.getCPUUsage() >= thresholds.cpuUsage,
-            title: "High CPU Usage",
-            body: String(format: "CPU is at %.1f%%", metrics.getCPUUsage()),
-            now: now
-        )
+        // Track every tick even while debounced, so a still-breaching channel re-fires at TTL lapse.
+        track(key: "cpu", breached: cpu >= thresholds.cpuUsage)
+        track(key: "ram", breached: ram >= thresholds.memUsage)
+        track(key: "power", breached: power >= thresholds.totalPower)
 
-        check(
-            key: "gpu",
-            condition: metrics.getGPUUsage() >= thresholds.gpuUsage,
-            title: "High GPU Usage",
-            body: String(format: "GPU is at %.1f%%", metrics.getGPUUsage()),
-            now: now
-        )
+        if let last = lastNotified, now.timeIntervalSince(last) < thresholds.ttl {
+            return
+        }
 
-        check(
-            key: "mem",
-            condition: metrics.getMemUsage() >= thresholds.memUsage,
-            title: "High Memory Usage",
-            body: String(
-                format: "Memory is at %.1f%% (%.1f GB used)",
-                metrics.getMemUsage(),
-                metrics.getMemUsed()
-            ),
-            now: now
-        )
+        if breaches["cpu", default: 0] >= thresholds.sustainSamples {
+            notify(
+                key: "cpu",
+                title: "High CPU Usage",
+                body: String(format: "CPU is at %.1f%%", cpu),
+                now: now
+            )
+            return
+        }
 
-        check(
-            key: "swap",
-            condition: metrics.getSwapUsage() >= thresholds.swapUsage,
-            title: "High Swap Usage",
-            body: String(
-                format: "Swap is at %.1f%% — system may begin to slow down",
-                metrics.getSwapUsage()
-            ),
-            now: now
-        )
+        if breaches["ram", default: 0] >= thresholds.sustainSamples {
+            notify(
+                key: "ram",
+                title: "High Memory Usage",
+                body: String(
+                    format: "Memory is at %.1f%% (%.1f GB used)",
+                    ram,
+                    metrics.getMemUsed()
+                ),
+                now: now
+            )
+            return
+        }
 
-        check(
-            key: "power",
-            condition: metrics.allPower >= thresholds.totalPower,
-            title: "High Power Draw",
-            body: String(
-                format: "System is drawing %.1fW — thermal throttling likely",
-                metrics.allPower
-            ),
-            now: now
-        )
+        if breaches["power", default: 0] >= thresholds.sustainSamples {
+            notify(
+                key: "power",
+                title: "High Power Draw",
+                body: String(
+                    format: "System is drawing %.1fW — thermal throttling likely",
+                    power
+                ),
+                now: now
+            )
+            return
+        }
     }
 
-    private func check(
-        key: String,
-        condition: Bool,
-        title: String,
-        body: String,
-        now: Date
-    ) {
-        guard condition else {
-            lastNotified.removeValue(forKey: key)
-            return
+    private func track(key: String, breached: Bool) {
+        if breached {
+            breaches[key] = min(
+                breaches[key, default: 0] + 1,
+                thresholds.sustainSamples
+            )
+        } else {
+            breaches[key] = 0
         }
+    }
 
-        if let last = lastNotified[key],
-            now.timeIntervalSince(last) < thresholds.cooldown
-        {
-            return
-        }
-
-        lastNotified[key] = now
+    private func notify(key: String, title: String, body: String, now: Date) {
+        lastNotified = now
         send(title: title, body: body, identifier: key)
     }
 
