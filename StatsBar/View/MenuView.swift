@@ -10,6 +10,7 @@ import Charts
 import Collections
 import LaunchAtLogin
 import AppKit
+import UserNotifications
 
 extension Color {
     func adaptedTextColor(_ env: EnvironmentValues) -> Color {
@@ -90,6 +91,7 @@ struct MenuView: View {
     @State private var diskUsageGraph: OrderedDictionary<String, Deque<DiskUsagePoint>> = [:]
 
     @State private var errorMessage: String = ""
+    @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = true
 
     var body: some View {
         VStack {
@@ -143,6 +145,14 @@ struct MenuView: View {
                 .clipShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
 
                 Spacer()
+
+                Toggle("Notifications", isOn: $notificationsEnabled)
+                    .onChange(of: notificationsEnabled) { _, enabled in
+                        NotificationManager.shared.isEnabled = enabled
+                        if enabled {
+                            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+                        }
+                    }
 
                 LaunchAtLogin.Toggle("Launch at login")
             }
@@ -259,6 +269,7 @@ struct MenuView: View {
             }
 
             self.updateMenu(metrics)
+            NotificationManager.shared.evaluate(metrics: metrics)
         }
     }
 }
