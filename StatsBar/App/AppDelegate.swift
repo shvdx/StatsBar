@@ -61,6 +61,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func resizeGlyph() {
+        if case .failed = self.engine.status {
+            self.statusItem?.length = 96
+            return
+        }
         self.statusItem?.length =
             self.engine.metrics == nil ? 72 : POPUP_VIEW_HEIGHT * 10
     }
@@ -68,12 +72,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func observeGlyphWidth() {
         withObservationTracking {
             _ = self.engine.metrics
+            _ = self.engine.status
         } onChange: {
             Task { @MainActor in
                 self.resizeGlyph()
-                if self.engine.metrics == nil {
-                    self.observeGlyphWidth()
-                }
+                self.observeGlyphWidth()
             }
         }
     }

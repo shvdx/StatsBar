@@ -211,7 +211,8 @@ struct Sampler {
         let fromMax =
             (max(avgFreq, Double(minFreq)) * usageRatio) / Double(maxFreq)
 
-        return (UInt32(avgFreq), Float32(fromMax))
+        let freq = avgFreq.isFinite ? min(max(avgFreq, 0), Double(UInt32.max)) : 0
+        return (UInt32(freq), Float32(fromMax))
     }
 
     private func calculateAggregateFrequencies(

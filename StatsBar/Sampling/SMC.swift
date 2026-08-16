@@ -110,6 +110,13 @@ class SMC {
         input.data8 = 5
         var output = try self.read(input: &input)
 
+        let capacity = MemoryLayout.size(ofValue: output.bytes)
+        guard keyInfo.dataSize >= 4, Int(keyInfo.dataSize) <= capacity else {
+            throw ServiceError.unexpectedError(
+                msg: "SMC PSTR dataSize out of range"
+            )
+        }
+
         var res = [UInt8](repeating: 0, count: Int(keyInfo.dataSize))
         memcpy(&res, &output.bytes, Int(keyInfo.dataSize))
         return res.withUnsafeBytes { ptr in

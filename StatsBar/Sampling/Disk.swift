@@ -36,10 +36,16 @@ class Disk {
 
     func updateDiskSpaceStats() throws {
         let fileManager = FileManager.default
-        let paths = fileManager.mountedVolumeURLs(
-            includingResourceValuesForKeys: [.volumeNameKey],
-            options: [.skipHiddenVolumes]
-        )!
+        guard
+            let paths = fileManager.mountedVolumeURLs(
+                includingResourceValuesForKeys: [.volumeNameKey],
+                options: [.skipHiddenVolumes]
+            )
+        else {
+            throw ServiceError.unexpectedError(
+                msg: "Failed to list mounted volumes"
+            )
+        }
 
         guard let session = DASessionCreate(kCFAllocatorDefault) else {
             throw ServiceError.unexpectedError(
@@ -151,15 +157,19 @@ class Disk {
             return nil
         }
 
-        if let uuid = diskDescription[kDADiskDescriptionMediaUUIDKey as String] {
-            d.uuid =
-                CFUUIDCreateString(kCFAllocatorDefault, (uuid as! CFUUID))
-                as String
+        if let uuid = diskDescription[kDADiskDescriptionMediaUUIDKey as String],
+            CFGetTypeID(uuid as CFTypeRef) == CFUUIDGetTypeID(),
+            let uuidString = CFUUIDCreateString(
+                kCFAllocatorDefault,
+                (uuid as! CFUUID)
+            )
+        {
+            d.uuid = uuidString as String
         }
-        if let media = diskDescription[
-            kDADiskDescriptionVolumeNameKey as String
-        ] {
-            d.mediaName = media as! String
+        if let media = diskDescription[kDADiskDescriptionVolumeNameKey as String]
+            as? String
+        {
+            d.mediaName = media
             if d.mediaName == "Recovery" {
                 return nil
             }
@@ -167,24 +177,22 @@ class Disk {
         if d.mediaName.isEmpty {
             if let media = diskDescription[
                 kDADiskDescriptionMediaNameKey as String
-            ] {
-                d.mediaName = media as! String
+            ] as? String {
+                d.mediaName = media
                 if d.mediaName == "Recovery" {
                     return nil
                 }
             }
         }
-        if let model = diskDescription[
-            kDADiskDescriptionDeviceModelKey as String
-        ] {
-            d.model = (model as! String).trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
+        if let model = diskDescription[kDADiskDescriptionDeviceModelKey as String]
+            as? String
+        {
+            d.model = model.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         if let proto = diskDescription[
             kDADiskDescriptionDeviceProtocolKey as String
-        ] {
-            d.connectionType = proto as! String
+        ] as? String {
+            d.connectionType = proto
         }
         if let path = diskDescription[kDADiskDescriptionVolumePathKey as String] {
             if let url = path as? NSURL {
@@ -203,8 +211,8 @@ class Disk {
         }
         if let volumeKind = diskDescription[
             kDADiskDescriptionVolumeKindKey as String
-        ] {
-            d.fileSystem = volumeKind as! String
+        ] as? String {
+            d.fileSystem = volumeKind
         }
 
         if d.path == nil {

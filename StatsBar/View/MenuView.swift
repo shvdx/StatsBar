@@ -76,8 +76,21 @@ struct MenuView: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
 
-            if !self.engine.errorMessage.isEmpty {
-                Text(self.engine.errorMessage)
+            if case .failed(let message) = self.engine.status {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    Text(message)
+                        .font(.callout)
+                    Spacer()
+                    Button("Retry") {
+                        self.engine.start()
+                    }
+                }
+                .padding(8)
+                .background(.orange.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .padding(.horizontal, 12)
             }
 
             if let metrics = self.engine.metrics {

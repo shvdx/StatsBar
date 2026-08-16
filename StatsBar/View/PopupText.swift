@@ -13,7 +13,13 @@ struct PopupText: View {
 
     var body: some View {
         HStack {
-            if let metric = self.engine.metrics {
+            if case .failed = self.engine.status {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    Text("StatsBar")
+                }
+            } else if let metric = self.engine.metrics {
                 HStack(spacing: 8) {
                     //                    Image(systemName: "cpu")
                     //                        .font(.system(size: 15))

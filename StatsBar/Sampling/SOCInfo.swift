@@ -102,6 +102,9 @@ private func getFreq(dict: [String: Any], key: String, isM3Below: Bool) throws
     guard let value = dict[key] else {
         throw ServiceError.dictionaryNull(for: key)
     }
+    guard CFGetTypeID(value as CFTypeRef) == CFDataGetTypeID() else {
+        throw ServiceError.unexpectedError(msg: "Unexpected type for \(key)")
+    }
 
     let data = value as! CFData
 
@@ -118,6 +121,10 @@ private func getFreq(dict: [String: Any], key: String, isM3Below: Bool) throws
     }
     for chunk in chunks {
         //            volts.append(UInt32(chunk[4]) | UInt32(chunk[5]) << 8 | UInt32(chunk[6]) << 16 | UInt32(chunk[7]) << 24)
+
+        if chunk.count < 4 {
+            continue
+        }
 
         let f =
             UInt32(chunk[0]) | UInt32(chunk[1]) << 8 | UInt32(chunk[2]) << 16

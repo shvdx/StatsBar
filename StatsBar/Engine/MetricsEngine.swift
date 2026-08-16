@@ -8,6 +8,12 @@
 import Collections
 import Foundation
 
+enum EngineStatus: Equatable {
+    case idle
+    case running
+    case failed(String)
+}
+
 @MainActor
 @Observable
 final class MetricsEngine {
@@ -16,13 +22,15 @@ final class MetricsEngine {
     private(set) var disks: OrderedDictionary<String, Drive> = [:]
     private(set) var usageGraph: Deque<UsagePoint> = UsagePoint.mockData()
     private(set) var diskUsageGraph: OrderedDictionary<String, Deque<DiskUsagePoint>> = [:]
-    private(set) var errorMessage: String = ""
+    private(set) var status: EngineStatus = .idle
 
     private var sampler: Sampler?
     private var task: Task<Void, Never>?
+    private var sample_failures = 0
 
     // 500 ms idle + ~500 ms sampling window in getMetrics() => ~1 update/sec.
     private static let sample_interval_ms = 500
+    private static let sample_failures_max = 3
 
     var isRunning: Bool {
         return self.task != nil
@@ -52,12 +60,13 @@ final class MetricsEngine {
         do {
             sampler = try Sampler()
         } catch {
-            self.errorMessage = "\(error)"
+            self.status = .failed(Self.message(for: error))
             return
         }
 
         self.sampler = sampler
-        self.errorMessage = ""
+        self.sample_failures = 0
+        self.status = .running
 
         // Sample off the main thread; hop back to apply/fail for state mutation.
         self.task = Task.detached(priority: .background) { [weak self] in
@@ -77,7 +86,10 @@ final class MetricsEngine {
                 } catch is CancellationError {
                     return
                 } catch {
-                    await self?.fail(error)
+                    let recovered = await self?.recordFailure(error) ?? false
+                    if recovered {
+                        continue
+                    }
                     return
                 }
             }
@@ -85,14 +97,31 @@ final class MetricsEngine {
     }
 
     func stop() {
+        self.teardown()
+        self.status = .idle
+    }
+
+    private func teardown() {
         self.task?.cancel()
         self.task = nil
         self.sampler = nil
     }
 
-    private func fail(_ error: Error) {
-        self.errorMessage = "\(error)"
-        self.stop()
+    private func recordFailure(_ error: Error) -> Bool {
+        self.sample_failures += 1
+        assert(self.sample_failures <= Self.sample_failures_max)
+
+        if self.sample_failures < Self.sample_failures_max {
+            return true
+        }
+
+        self.teardown()
+        self.status = .failed(Self.message(for: error))
+        return false
+    }
+
+    private static func message(for error: Error) -> String {
+        return (error as? ServiceError)?.getMessage() ?? error.localizedDescription
     }
 
     private func apply(
@@ -101,6 +130,7 @@ final class MetricsEngine {
     ) {
         assert(self.usageGraph.count <= GRAPH_POINTS_MAX)
 
+        self.sample_failures = 0
         self.disks = disks
         self.metrics = metrics
 

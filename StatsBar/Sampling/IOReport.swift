@@ -17,9 +17,14 @@ struct IOSample {
     let delta: CFDictionary
 }
 
-private func collectIOSamples(data: CFDictionary) -> [IOSample] {
-    let dict = data as! [String: Any]
-    let items = dict["IOReportChannels"] as! CFArray
+private func collectIOSamples(data: CFDictionary) throws -> [IOSample] {
+    guard let dict = data as? [String: Any] else {
+        throw ServiceError.failedDeserialization
+    }
+    guard let channels = dict["IOReportChannels"] as? NSArray else {
+        throw ServiceError.failedDeserialization
+    }
+    let items = channels as CFArray
     let itemSize = CFArrayGetCount(items)
 
     var samples = [IOSample]()
@@ -93,7 +98,7 @@ class IOReport {
             prev = next
 
             samples.append(
-                (collectIOSamples(data: diff), max(elapsed, TimeInterval(1)))
+                (try collectIOSamples(data: diff), max(elapsed, TimeInterval(1)))
             )
         }
 

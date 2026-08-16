@@ -216,7 +216,10 @@ class Network {
                 continue
             }
 
-            var addr = inf!.pointee.ifa_addr.pointee
+            guard let sockaddr = inf?.pointee.ifa_addr else {
+                continue
+            }
+            var addr = sockaddr.pointee
             guard addr.sa_family == UInt8(AF_INET) else {
                 continue
             }

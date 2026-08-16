@@ -1,5 +1,5 @@
 //
-//  Error.swift
+//  ServiceError.swift
 //  StatsBar
 //
 //  Created by Shashank on 14/11/24.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ServiceError: Error {
+enum ServiceError: LocalizedError {
     case matchingServiceNotFound
     case errorReadingIORegistry
     case powerManagerRegistryNotFound
@@ -21,6 +21,10 @@ enum ServiceError: Error {
     case errorOwningChannels
     case failedToGetChannelSubscription
     case unexpectedError(msg: String)
+
+    var errorDescription: String? {
+        return self.getMessage()
+    }
 
     func getMessage() -> String {
         switch self {
