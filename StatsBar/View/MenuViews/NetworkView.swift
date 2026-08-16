@@ -12,14 +12,14 @@ import Collections
 struct NetworkView: View {
     @Environment(\.self) var environment
 
-    @Binding var sampler: Sampler?
+    let network: Network?
     var metrics: Metrics
-    @Binding var usageGraph: Deque<UsagePoint>
+    let usageGraph: Deque<UsagePoint>
 
-    init(sampler: Binding<Sampler?>, metrics: Metrics, usageGraph: Binding<Deque<UsagePoint>>) {
-        self._sampler = sampler
+    init(network: Network?, metrics: Metrics, usageGraph: Deque<UsagePoint>) {
+        self.network = network
         self.metrics = metrics
-        self._usageGraph = usageGraph
+        self.usageGraph = usageGraph
     }
 
     @State private var networkSelection: UInt64? = nil
@@ -132,13 +132,13 @@ struct NetworkView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                Image(systemName: (sampler?.network.getConnType() ?? .other).getSystemIcon())
+                Image(systemName: (network?.getConnType() ?? .other).getSystemIcon())
                     .frame(width: 8, height: 8, alignment: .center)
                     .padding(.leading, 2)
                 Text("Local IP")
                     .font(.callout)
                 Spacer()
-                Text(sampler?.network.getLocalIP() ?? "--")
+                Text(network?.getLocalIP() ?? "--")
                     .font(.callout)
             }
             .padding(.vertical, 2)

@@ -50,8 +50,8 @@ struct SOCInfo {
 
         let proc = sysInfo.spHardwareDataType[0].number_processors.split(separator: "proc ").last ?? ""
         let cores = proc.split(separator: ":").map { Int($0) ?? 0 }
-        self.eCores = cores[2]
-        self.pCores = cores[1]
+        self.eCores = cores[cores.count - 1]
+        self.pCores = cores[cores.count - 2]
         self.gpuCores = Int(sysInfo.spDisplaysDataType[0].sppci_cores) ?? 0
 
         let eCpuKey = "voltage-states1-sram"

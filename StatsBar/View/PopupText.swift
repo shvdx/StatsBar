@@ -1,5 +1,5 @@
 //
-//  Hello.swift
+//  PopupText.swift
 //  StatsBar
 //
 //  Created by Shashank on 25/11/24.
@@ -9,11 +9,11 @@ import SwiftUI
 
 struct PopupText: View {
 
-    var metrics: Metrics?
+    var engine: MetricsEngine
 
     var body: some View {
         HStack {
-            if let metric = self.metrics {
+            if let metric = self.engine.metrics {
                 HStack(spacing: 8) {
                     //                    Image(systemName: "cpu")
                     //                        .font(.system(size: 15))

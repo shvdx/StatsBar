@@ -13,11 +13,11 @@ struct MemView: View {
     @Environment(\.self) var environment
 
     var metrics: Metrics
-    @Binding var usageGraph: Deque<UsagePoint>
+    let usageGraph: Deque<UsagePoint>
 
-    init(metrics: Metrics, usageGraph: Binding<Deque<UsagePoint>>) {
+    init(metrics: Metrics, usageGraph: Deque<UsagePoint>) {
         self.metrics = metrics
-        self._usageGraph = usageGraph
+        self.usageGraph = usageGraph
     }
 
     @State private var phyMemSelection: UInt64? = nil

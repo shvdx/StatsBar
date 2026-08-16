@@ -44,8 +44,6 @@ struct WiFi {
 }
 
 struct Bandwidth {
-    var totalUpload: UInt64
-    var totalDownload: UInt64
     var upload: Int64
     var download: Int64
 }
@@ -113,7 +111,7 @@ class Network {
             self.prevBandwidth?.upload = current.upload
             self.prevBandwidth?.download = current.download
         } else {
-            self.prevBandwidth = Bandwidth(totalUpload: 0, totalDownload: 0, upload: current.upload, download: current.download)
+            self.prevBandwidth = Bandwidth(upload: current.upload, download: current.download)
         }
 
         self.readLocalIP()
@@ -194,16 +192,5 @@ class Network {
             getnameinfo(&addr, socklen_t(addr.sa_len), &ip, socklen_t(ip.count), nil, 0, NI_NUMERICHOST)
             self.localIP = String(cString: ip)
         }
-    }
-
-    private func getTxRxBytes(inf: UnsafeMutablePointer<ifaddrs>) -> (upload: Int64, download: Int64) {
-        let addr = inf.pointee.ifa_addr.pointee
-
-        guard addr.sa_family == UInt8(AF_LINK) else {
-            return (0, 0)
-        }
-
-        let data: UnsafeMutablePointer<if_data>? = unsafeBitCast(inf.pointee.ifa_data, to: UnsafeMutablePointer<if_data>.self)
-        return (upload: Int64(data?.pointee.ifi_obytes ?? 0), download: Int64(data?.pointee.ifi_ibytes ?? 0))
     }
 }

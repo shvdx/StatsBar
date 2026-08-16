@@ -13,13 +13,13 @@ struct DiskView: View {
     @Environment(\.self) var environment
 
     var metrics: Metrics
-    @Binding var disks: OrderedDictionary<String, Drive>
-    @Binding var diskUsageGraph: OrderedDictionary<String, Deque<DiskUsagePoint>>
+    let disks: OrderedDictionary<String, Drive>
+    let diskUsageGraph: OrderedDictionary<String, Deque<DiskUsagePoint>>
 
-    init(metrics: Metrics, disks: Binding<OrderedDictionary<String, Drive>>, diskUsageGraph: Binding<OrderedDictionary<String, Deque<DiskUsagePoint>>>) {
+    init(metrics: Metrics, disks: OrderedDictionary<String, Drive>, diskUsageGraph: OrderedDictionary<String, Deque<DiskUsagePoint>>) {
         self.metrics = metrics
-        self._disks = disks
-        self._diskUsageGraph = diskUsageGraph
+        self.disks = disks
+        self.diskUsageGraph = diskUsageGraph
     }
 
     @State private var diskSelection: [String: UInt64?] = [:]

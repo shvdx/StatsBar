@@ -12,14 +12,14 @@ import Collections
 struct CPUView: View {
     @Environment(\.self) var environment
 
-    @Binding var sampler: Sampler?
+    let socInfo: SOCInfo?
     var metrics: Metrics
-    @Binding var usageGraph: Deque<UsagePoint>
+    let usageGraph: Deque<UsagePoint>
 
-    init(sampler: Binding<Sampler?>, metrics: Metrics, usageGraph: Binding<Deque<UsagePoint>>) {
-        self._sampler = sampler
+    init(socInfo: SOCInfo?, metrics: Metrics, usageGraph: Deque<UsagePoint>) {
+        self.socInfo = socInfo
         self.metrics = metrics
-        self._usageGraph = usageGraph
+        self.usageGraph = usageGraph
     }
 
     @State private var eCpuSelection: UInt64? = nil
@@ -30,7 +30,7 @@ struct CPUView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("\(self.sampler?.socInfo.chipName ?? "") (\(self.sampler?.socInfo.eCores ?? 0)E + \(self.sampler?.socInfo.pCores ?? 0)P + \(self.sampler?.socInfo.gpuCores ?? 0)GPU)")
+            Text("\(self.socInfo?.chipName ?? "") (\(self.socInfo?.eCores ?? 0)E + \(self.socInfo?.pCores ?? 0)P + \(self.socInfo?.gpuCores ?? 0)GPU)")
                 .font(.callout)
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity, alignment: .leading)

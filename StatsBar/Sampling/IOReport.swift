@@ -50,24 +50,6 @@ class IOReport {
         self.prev = nil
     }
 
-//    func getSample(duration: UInt64) async throws -> [IOSample] {
-//        guard let sampleF = IOReportCreateSamples(self.subscription, self.channels, nil)?.takeRetainedValue() else {
-//            throw ServiceError.unexpectedError(msg: "Sample empty in creation [1]")
-//        }
-//
-//        try await Task.sleep(nanoseconds: UInt64(duration * NSEC_PER_MSEC))
-//
-//        guard let sampleS = IOReportCreateSamples(self.subscription, self.channels, nil)?.takeRetainedValue() else {
-//            throw ServiceError.unexpectedError(msg: "Sample empty in creation [2]")
-//        }
-//
-//        guard let delta = IOReportCreateSamplesDelta(sampleF, sampleS, nil)?.takeRetainedValue() else {
-//            throw ServiceError.unexpectedError(msg: "Sample delta nil")
-//        }
-//
-//        return collectIOSamples(data: delta)
-//    }
-
     func getSamples(measures: Int) async throws -> [([IOSample], TimeInterval)] {
         let duration = 500  // ms
         let step = UInt64(duration / measures)
@@ -119,7 +101,9 @@ private func getIOChannels() throws -> CFMutableDictionary {
         channels.append(channel)
     }
 
-    let chan = channels[0]
+    guard let chan = channels.first else {
+        throw ServiceError.noIOChannels
+    }
     for i in 1..<channels.count {
         IOReportMergeChannels(chan, channels[i], nil)
     }

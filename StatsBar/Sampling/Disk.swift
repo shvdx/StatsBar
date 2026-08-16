@@ -220,31 +220,3 @@ class Disk {
         return 0
     }
 }
-
-// https://opensource.apple.com/source/bless/bless-152/libbless/APFS/BLAPFSUtilities.c.auto.html
-public func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
-    var parent: io_registry_entry_t = 0
-
-    if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent) != KERN_SUCCESS {
-        return nil
-    }
-
-    for _ in 1...level where IORegistryEntryGetParentEntry(parent, kIOServicePlane, &parent) != KERN_SUCCESS {
-        IOObjectRelease(parent)
-        return nil
-    }
-
-    return parent
-}
-
-public func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
-    var properties: Unmanaged<CFMutableDictionary>? = nil
-
-    if IORegistryEntryCreateCFProperties(entry, &properties, kCFAllocatorDefault, 0) != kIOReturnSuccess {
-        return nil
-    }
-
-    defer { properties?.release() }
-
-    return properties?.takeUnretainedValue()
-}
