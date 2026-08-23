@@ -137,10 +137,10 @@ struct DiskView: View {
                                         }
                                         .padding(.vertical, 4)
                                         .padding(.horizontal, 6)
-                                        .background {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(Color.blue)
-                                        }
+                                        .background(
+                                            Color.blue,
+                                            in: RoundedRectangle(cornerRadius: 10)
+                                        )
                                     }
                                     .annotation(
                                         position: .bottom,
@@ -166,10 +166,10 @@ struct DiskView: View {
                                         }
                                         .padding(.vertical, 4)
                                         .padding(.horizontal, 6)
-                                        .background {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(Color.mint)
-                                        }
+                                        .background(
+                                            Color.mint,
+                                            in: RoundedRectangle(cornerRadius: 10)
+                                        )
                                     }
                             }
                         }

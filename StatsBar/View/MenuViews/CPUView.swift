@@ -15,11 +15,18 @@ struct CPUView: View {
     let socInfo: SOCInfo?
     var metrics: Metrics
     let usageGraph: Deque<UsagePoint>
+    let processes: [ProcessUsage]
 
-    init(socInfo: SOCInfo?, metrics: Metrics, usageGraph: Deque<UsagePoint>) {
+    init(
+        socInfo: SOCInfo?,
+        metrics: Metrics,
+        usageGraph: Deque<UsagePoint>,
+        processes: [ProcessUsage]
+    ) {
         self.socInfo = socInfo
         self.metrics = metrics
         self.usageGraph = usageGraph
+        self.processes = processes
     }
 
     @State private var eCpuSelection: UInt64? = nil
@@ -30,12 +37,12 @@ struct CPUView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(
-                "\(self.socInfo?.chipName ?? "") (\(self.socInfo?.eCores ?? 0)E + \(self.socInfo?.pCores ?? 0)P + \(self.socInfo?.gpuCores ?? 0)GPU)"
+            ProcessMenu(
+                title:
+                    "\(self.socInfo?.chipName ?? "") (\(self.socInfo?.eCores ?? 0)E + \(self.socInfo?.pCores ?? 0)P + \(self.socInfo?.gpuCores ?? 0)GPU)",
+                processes: self.processes,
+                metric: .cpu
             )
-            .font(.callout)
-            .fontWeight(.semibold)
-            .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 4) {
                 VStack(spacing: 4) {
@@ -76,10 +83,7 @@ struct CPUView: View {
                                     }
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 6)
-                                    .background {
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .foregroundStyle(Color.blue)
-                                    }
+                                    .background(Color.blue, in: RoundedRectangle(cornerRadius: 10))
                                 }
                         }
                     }
@@ -133,10 +137,7 @@ struct CPUView: View {
                                     }
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 6)
-                                    .background {
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .foregroundStyle(Color.green)
-                                    }
+                                    .background(Color.green, in: RoundedRectangle(cornerRadius: 10))
                                 }
                         }
                     }
@@ -191,10 +192,7 @@ struct CPUView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundStyle(Color.orange)
-                                }
+                                .background(Color.orange, in: RoundedRectangle(cornerRadius: 10))
                             }
                     }
                 }

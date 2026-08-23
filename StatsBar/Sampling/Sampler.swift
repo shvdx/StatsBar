@@ -10,8 +10,6 @@ import Foundation
 private let CPU_FREQ_SUBG = "CPU Core Performance States"
 private let GPU_FREQ_SUBG = "GPU Performance States"
 
-// One IOReport window's compute/energy readings. Smaller than Metrics: memory,
-// swap, network, disk and system power are read once per getMetrics(), not here.
 private struct CoreSample {
     let eCpuUsage: (UInt32, Float32)
     let pCpuUsage: (UInt32, Float32)
@@ -31,6 +29,7 @@ struct Sampler {
     let network: Network
     let disk: Disk
     let memory: Memory
+    let processes: ProcessSampler
 
     private static let measures = 4
 
@@ -41,6 +40,7 @@ struct Sampler {
         self.network = Network()
         self.disk = Disk()
         self.memory = Memory()
+        self.processes = ProcessSampler()
     }
 
     func getMetrics() async throws -> Metrics {

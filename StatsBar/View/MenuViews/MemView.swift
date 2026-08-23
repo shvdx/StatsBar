@@ -14,10 +14,16 @@ struct MemView: View {
 
     var metrics: Metrics
     let usageGraph: Deque<UsagePoint>
+    let processes: [ProcessUsage]
 
-    init(metrics: Metrics, usageGraph: Deque<UsagePoint>) {
+    init(
+        metrics: Metrics,
+        usageGraph: Deque<UsagePoint>,
+        processes: [ProcessUsage]
+    ) {
         self.metrics = metrics
         self.usageGraph = usageGraph
+        self.processes = processes
     }
 
     @State private var phyMemSelection: UInt64? = nil
@@ -27,10 +33,11 @@ struct MemView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("Memory")
-                .font(.callout)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            ProcessMenu(
+                title: "Memory",
+                processes: self.processes,
+                metric: .memory
+            )
 
             HStack(spacing: 4) {
                 Chart(self.usageGraph) {
@@ -70,10 +77,7 @@ struct MemView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundStyle(Color.red)
-                                }
+                                .background(Color.red, in: RoundedRectangle(cornerRadius: 10))
                             }
                     }
                 }
@@ -127,10 +131,7 @@ struct MemView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundStyle(Color.yellow)
-                                }
+                                .background(Color.yellow, in: RoundedRectangle(cornerRadius: 10))
                             }
                     }
                 }

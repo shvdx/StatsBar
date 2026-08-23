@@ -109,10 +109,7 @@ struct NetworkView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundStyle(Color.indigo)
-                                }
+                                .background(Color.indigo, in: RoundedRectangle(cornerRadius: 10))
                             }
                             .annotation(
                                 position: .bottom,
@@ -135,10 +132,7 @@ struct NetworkView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundStyle(Color.purple)
-                                }
+                                .background(Color.purple, in: RoundedRectangle(cornerRadius: 10))
                             }
                     }
                 }

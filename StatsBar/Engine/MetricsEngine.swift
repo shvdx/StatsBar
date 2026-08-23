@@ -5,6 +5,7 @@
 //  Created by Shashank on 16/08/25.
 //
 
+import AppKit
 import Collections
 import Foundation
 
@@ -19,6 +20,7 @@ enum EngineStatus: Equatable {
 final class MetricsEngine {
 
     private(set) var metrics: Metrics?
+    private(set) var processes: [ProcessUsage] = []
     private(set) var disks: OrderedDictionary<String, Drive> = [:]
     private(set) var usageGraph: Deque<UsagePoint> = UsagePoint.mockData()
     private(set) var diskUsageGraph: OrderedDictionary<String, Deque<DiskUsagePoint>> = [:]
@@ -78,11 +80,16 @@ final class MetricsEngine {
                     )
                     let metrics = try await sampler.getMetrics()
                     let disks = sampler.disk.getDisks()
+                    let processes = try sampler.processes.sample()
 
                     if Task.isCancelled {
                         return
                     }
-                    await self?.apply(metrics: metrics, disks: disks)
+                    await self?.apply(
+                        metrics: metrics,
+                        disks: disks,
+                        processes: processes
+                    )
                 } catch is CancellationError {
                     return
                 } catch {
@@ -126,13 +133,15 @@ final class MetricsEngine {
 
     private func apply(
         metrics: Metrics,
-        disks: OrderedDictionary<String, Drive>
+        disks: OrderedDictionary<String, Drive>,
+        processes: [RawProcessUsage]
     ) {
         assert(self.usageGraph.count <= GRAPH_POINTS_MAX)
 
         self.sample_failures = 0
         self.disks = disks
         self.metrics = metrics
+        self.processes = Self.resolve(processes: processes)
 
         // Drop graphs for disks that went away; trim the survivors.
         for (key, var usage) in self.diskUsageGraph {
@@ -186,6 +195,24 @@ final class MetricsEngine {
         }
 
         NotificationManager.shared.evaluate(metrics: metrics)
+    }
+
+    private static func resolve(processes: [RawProcessUsage]) -> [ProcessUsage] {
+        return processes.map { raw in
+            let app = NSRunningApplication(processIdentifier: raw.responsiblePid)
+            let bundleId = app?.bundleIdentifier
+
+            return ProcessUsage(
+                id: bundleId ?? "pid:\(raw.responsiblePid)",
+                name: app?.localizedName ?? raw.command,
+                icon: app?.icon,
+                pids: raw.pids,
+                cpuPercent: raw.cpuPercent,
+                memoryBytes: raw.memoryBytes,
+                diskBytesPerSec: raw.diskBytesPerSec,
+                networkBytesPerSec: 0
+            )
+        }
     }
 
     private static func trim<T>(_ queue: inout Deque<T>) {

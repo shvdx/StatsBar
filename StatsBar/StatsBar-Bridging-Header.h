@@ -33,4 +33,8 @@ CFStringRef IOReportStateGetNameForIndex(CFDictionaryRef a, int32_t b);
 int64_t IOReportStateGetResidency(CFDictionaryRef a, int32_t b);
 int64_t IOReportSimpleGetIntegerValue(CFDictionaryRef a, int32_t b);
 
+#include <sys/types.h>
+
+pid_t responsibility_get_pid_responsible_for_pid(pid_t pid);
+
 #endif /* StatsBar_Bridging_Header_h */

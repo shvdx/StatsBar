@@ -102,7 +102,8 @@ struct MenuView: View {
                         CPUView(
                             socInfo: self.engine.socInfo,
                             metrics: metrics,
-                            usageGraph: self.engine.usageGraph
+                            usageGraph: self.engine.usageGraph,
+                            processes: self.engine.processes
                         )
                         .padding(.horizontal, 12)
 
@@ -111,7 +112,8 @@ struct MenuView: View {
 
                         MemView(
                             metrics: metrics,
-                            usageGraph: self.engine.usageGraph
+                            usageGraph: self.engine.usageGraph,
+                            processes: self.engine.processes
                         )
                         .padding(.horizontal, 12)
 
