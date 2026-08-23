@@ -2,7 +2,7 @@
 //  ProcessMenu.swift
 //  StatsBar
 //
-//  Created by Shashank on 23/09/26.
+//  Created by Shashank on 23/08/26.
 //
 
 import SwiftUI
@@ -99,7 +99,10 @@ struct ProcessMenu: View {
         case .cpu:
             return String(format: "%.1f%%", process.cpuPercent)
         case .memory:
-            return Units(bytes: Int64(process.memoryBytes)).getReadableString()
+            return Units(bytes: Int64(process.memoryBytes)).getReadableString().replacing(
+                "/s",
+                with: ""
+            )
         case .disk:
             return Units(bytes: Int64(process.diskBytesPerSec))
                 .getReadableString() + "/s"

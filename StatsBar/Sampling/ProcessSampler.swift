@@ -2,14 +2,12 @@
 //  ProcessSampler.swift
 //  StatsBar
 //
+//  Created by Shashank on 23/08/26.
+//
 
 import Darwin
 import Foundation
 
-// Per-app aggregation produced off the main thread via libproc rusage. Names and
-// icons are resolved later on the main actor (AppKit), so nothing here touches
-// NSRunningApplication. Rows are keyed by the *responsible* pid, so an app's
-// helper processes (WebKit, XPC) collapse into their parent app.
 struct RawProcessUsage {
     let responsiblePid: pid_t
     let command: String
@@ -21,9 +19,8 @@ struct RawProcessUsage {
 
 final class ProcessSampler {
 
-    // Bound everything: the pid enumeration buffer and the returned row count.
     private static let processes_max = 4096
-    private static let rows_max = 256
+    private static let rows_max = 16
 
     // false => one row per pid (raw); true => fold helpers into their parent app.
     private static let group_by_app = false
@@ -95,13 +92,14 @@ final class ProcessSampler {
 
     private func listPids() throws -> [pid_t] {
         var pids = [pid_t](repeating: 0, count: Self.processes_max)
-        let size = Int32(Self.processes_max * MemoryLayout<pid_t>.size)
-        let bytes = proc_listallpids(&pids, size)
-        guard bytes > 0 else {
+        let buffer_bytes = Int32(Self.processes_max * MemoryLayout<pid_t>.size)
+
+        let returned = proc_listallpids(&pids, buffer_bytes)
+        guard returned > 0 else {
             throw ServiceError.unexpectedError(msg: "proc_listallpids failed")
         }
 
-        let count = min(Int(bytes) / MemoryLayout<pid_t>.size, Self.processes_max)
+        let count = min(Int(returned), Self.processes_max)
         assert(count >= 0)
         return Array(pids.prefix(count))
     }
@@ -169,10 +167,18 @@ final class ProcessSampler {
             )
         }
 
-        // Cap the returned set (well above the real app count) to bound the work
-        // the main actor does resolving icons; keep the busiest by CPU.
-        let capped = rows.sorted { $0.cpuPercent > $1.cpuPercent }
-            .prefix(Self.rows_max)
-        return Array(capped)
+        var keep: [pid_t: RawProcessUsage] = [:]
+        for row in rows.sorted(by: { $0.cpuPercent > $1.cpuPercent }).prefix(Self.rows_max) {
+            keep[row.responsiblePid] = row
+        }
+        for row in rows.sorted(by: { $0.memoryBytes > $1.memoryBytes }).prefix(Self.rows_max) {
+            keep[row.responsiblePid] = row
+        }
+        for row in rows.sorted(by: { $0.diskBytesPerSec > $1.diskBytesPerSec }).prefix(
+            Self.rows_max
+        ) {
+            keep[row.responsiblePid] = row
+        }
+        return Array(keep.values)
     }
 }
