@@ -5,6 +5,7 @@
 //  Created by Shashank Verma on 09/07/25.
 //
 
+import AppKit
 import Charts
 import Collections
 import SwiftUI
@@ -26,6 +27,23 @@ struct NetworkView: View {
 
     private var graphShape = RoundedRectangle(cornerRadius: 12)
 
+    // Wi-Fi connected but no SSID and location not granted => name is hidden.
+    private var showLocationWarning: Bool {
+        guard self.network?.getConnType() == .wifi else { return false }
+        guard (self.network?.getSSID() ?? "").isEmpty else { return false }
+        return !LocationAuth.shared.isAuthorized
+    }
+
+    private func openLocationSettings() {
+        guard
+            let url = URL(
+                string:
+                    "x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices"
+            )
+        else { return }
+        NSWorkspace.shared.open(url)
+    }
+
     private func getNetworkGraphDomain() -> [Int64] {
         let maxUsage = self.usageGraph.reduce(Int64(0)) {
             max(
@@ -41,10 +59,36 @@ struct NetworkView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("Network")
-                .font(.callout)
-                .fontWeight(.semibold)
+            HStack(alignment: .center) {
+                HStack(spacing: 4) {
+                    Text("Network: \(network?.getSSID() ?? "")")
+                        .font(.jb(.callout))
+                        .fontWeight(.semibold)
+
+                    if self.showLocationWarning {
+                        Button {
+                            self.openLocationSettings()
+                        } label: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.jb(.caption))
+                        }
+                        .buttonStyle(.plain)
+                        .help(
+                            "Grant Location access to show the Wi-Fi network name."
+                        )
+                    }
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer()
+
+                Text(
+                    "\(network?.getBSDName() ?? "") (\(network?.getInterfaceName() ?? ""))"
+                )
+                .font(.jb(size: 12))
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
 
             Chart {
                 ForEach(self.usageGraph, id: \.id) { usageInfo in
@@ -100,7 +144,7 @@ struct NetworkView: View {
                                             bytes: usage.networkUsage[1].value
                                         ).getReadableString()
                                     )
-                                    .font(.callout)
+                                    .font(.jb(.callout))
                                     .foregroundStyle(
                                         Color.indigo.adaptedTextColor(
                                             self.environment
@@ -123,7 +167,7 @@ struct NetworkView: View {
                                             )
                                         ).getReadableString()
                                     )
-                                    .font(.callout)
+                                    .font(.jb(.callout))
                                     .foregroundStyle(
                                         Color.purple.adaptedTextColor(
                                             self.environment
@@ -162,13 +206,13 @@ struct NetworkView: View {
                         alignment: .center
                     )
                 Text("Download")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     Units(bytes: metrics.networkUsage.download)
                         .getReadableString()
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
 
@@ -177,13 +221,13 @@ struct NetworkView: View {
                     .foregroundStyle(Color.purple)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("Upload")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     Units(bytes: metrics.networkUsage.upload)
                         .getReadableString()
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
 
@@ -195,10 +239,10 @@ struct NetworkView: View {
                 .frame(width: 8, height: 8, alignment: .center)
                 .padding(.leading, 2)
                 Text("Local IP")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(network?.getLocalIP() ?? "--")
-                    .font(.callout)
+                    .font(.jb(.callout))
             }
             .padding(.vertical, 2)
         }

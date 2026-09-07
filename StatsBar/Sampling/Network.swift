@@ -130,12 +130,25 @@ class Network {
         }
 
         self.readLocalIP()
+        self.readWiFi()
 
         return (upload, download)
     }
 
     func getLocalIP() -> String {
         self.localIP
+    }
+
+    func getSSID() -> String {
+        self.wifi?.ssid ?? ""
+    }
+
+    func getInterfaceName() -> String {
+        self.interface?.displayName ?? ""
+    }
+
+    func getBSDName() -> String {
+        self.interface?.bsdName ?? ""
     }
 
     func getConnType() -> NetworkType {
@@ -197,6 +210,20 @@ class Network {
         }
 
         return (totalUpload, totalDownload)
+    }
+
+    private func readWiFi() {
+        guard self.connType == .wifi,
+            let interface = CWWiFiClient.shared().interface()
+        else {
+            self.wifi = nil
+            return
+        }
+
+        self.wifi = WiFi(
+            ssid: interface.ssid() ?? "",
+            bssid: interface.bssid() ?? ""
+        )
     }
 
     private func readLocalIP() {

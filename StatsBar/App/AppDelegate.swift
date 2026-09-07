@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import CoreText
 import SwiftUI
 import UserNotifications
 
@@ -17,6 +18,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var glyph: NSHostingView<PopupText>?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Self.registerFonts()
+        LocationAuth.shared.request()
+
         if let window = NSApplication.shared.windows.first {
             window.close()
         }
@@ -30,6 +34,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         self.setupMenu()
+    }
+
+    // Bundled fonts aren't auto-registered; make JetBrains Mono resolvable by name.
+    private static func registerFonts() {
+        guard
+            let urls = Bundle.main.urls(
+                forResourcesWithExtension: "ttf",
+                subdirectory: nil
+            )
+        else { return }
+        CTFontManagerRegisterFontURLs(urls as CFArray, .process, true, nil)
     }
 
     private func setupMenu() {

@@ -73,7 +73,7 @@ struct CPUView: View {
                                                     arguments: usage.eCpuUsage
                                                 )
                                             )
-                                            .font(.callout)
+                                            .font(.jb(.callout))
                                             .foregroundStyle(
                                                 Color.blue.adaptedTextColor(
                                                     self.environment
@@ -127,7 +127,7 @@ struct CPUView: View {
                                                     arguments: usage.pCpuUsage
                                                 )
                                             )
-                                            .font(.callout)
+                                            .font(.jb(.callout))
                                             .foregroundStyle(
                                                 Color.green.adaptedTextColor(
                                                     self.environment
@@ -182,7 +182,7 @@ struct CPUView: View {
                                                 arguments: usage.gpuUsage
                                             )
                                         )
-                                        .font(.callout)
+                                        .font(.jb(.callout))
                                         .foregroundStyle(
                                             Color.orange.adaptedTextColor(
                                                 self.environment
@@ -215,7 +215,7 @@ struct CPUView: View {
                     .foregroundStyle(Color.blue)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("E-CPU")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     String(
@@ -223,7 +223,7 @@ struct CPUView: View {
                         arguments: metrics.getECPUInfo()
                     )
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
 
@@ -232,7 +232,7 @@ struct CPUView: View {
                     .foregroundStyle(Color.green)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("P-CPU")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     String(
@@ -240,7 +240,7 @@ struct CPUView: View {
                         arguments: metrics.getPCPUInfo()
                     )
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
 
@@ -249,7 +249,7 @@ struct CPUView: View {
                     .foregroundStyle(Color.orange)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("GPU")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     String(
@@ -259,7 +259,7 @@ struct CPUView: View {
                         ]
                     )
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
         }

@@ -67,7 +67,7 @@ struct MemView: View {
                                                 arguments: usage.memUsage
                                             )
                                         )
-                                        .font(.callout)
+                                        .font(.jb(.callout))
                                         .foregroundStyle(
                                             Color.red.adaptedTextColor(
                                                 self.environment
@@ -121,7 +121,7 @@ struct MemView: View {
                                                 arguments: usage.swapUsage
                                             )
                                         )
-                                        .font(.callout)
+                                        .font(.jb(.callout))
                                         .foregroundStyle(
                                             Color.yellow.adaptedTextColor(
                                                 self.environment
@@ -157,12 +157,12 @@ struct MemView: View {
                         alignment: .center
                     )
                 Text("Physical")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     String(format: "%.2f%%", arguments: [metrics.getMemUsage()])
                 )
-                .font(.callout)
+                .font(.jb(.callout))
                 Text(
                     String(
                         format: "%.2f / %d GB",
@@ -171,7 +171,7 @@ struct MemView: View {
                         ]
                     )
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
 
@@ -180,7 +180,7 @@ struct MemView: View {
                     .foregroundStyle(Color.yellow)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("Swap")
-                    .font(.callout)
+                    .font(.jb(.callout))
                 Spacer()
                 Text(
                     String(
@@ -188,7 +188,7 @@ struct MemView: View {
                         arguments: [metrics.getSwapUsage()]
                     )
                 )
-                .font(.callout)
+                .font(.jb(.callout))
                 Text(
                     String(
                         format: "%.2f / %d GB",
@@ -197,7 +197,7 @@ struct MemView: View {
                         ]
                     )
                 )
-                .font(.callout)
+                .font(.jb(.callout))
             }
             .padding(.vertical, 2)
         }

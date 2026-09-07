@@ -32,13 +32,13 @@ struct ProcessMenu: View {
             } label: {
                 HStack {
                     Text(self.title)
-                        .font(.callout)
+                        .font(.jb(.callout))
                         .fontWeight(.semibold)
                     Spacer()
                     Image(systemName: "list.bullet")
-                        .font(.caption)
+                        .font(.jb(.caption))
                     Image(systemName: self.expanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
+                        .font(.jb(.caption))
                 }
                 .contentShape(Rectangle())
             }
@@ -76,12 +76,12 @@ struct ProcessMenu: View {
                 .resizable()
                 .frame(width: 16, height: 16)
             Text(process.name)
-                .font(.callout)
+                .font(.jb(.callout))
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer()
             Text(self.value(process))
-                .font(.callout)
+                .font(.jb(.callout))
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
         }

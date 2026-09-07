@@ -8,9 +8,7 @@
 import AppKit
 import Charts
 import Collections
-import LaunchAtLogin
 import SwiftUI
-import UserNotifications
 
 extension Color {
     func adaptedTextColor(_ env: EnvironmentValues) -> Color {
@@ -27,8 +25,6 @@ struct MenuView: View {
     @Environment(\.self) var environment
 
     let engine: MetricsEngine
-    @AppStorage(NotificationManager.enabledKey) private
-        var notificationsEnabled = true
 
     var body: some View {
         VStack {
@@ -59,29 +55,19 @@ struct MenuView: View {
                 .clipShape(
                     RoundedRectangle(cornerSize: CGSize(width: 8, height: 8))
                 )
-
-                Spacer()
-
-                Toggle("Notifications", isOn: $notificationsEnabled)
-                    .onChange(of: notificationsEnabled) { _, enabled in
-                        NotificationManager.shared.isEnabled = enabled
-                        if enabled {
-                            UNUserNotificationCenter.current()
-                                .requestAuthorization(options: [.alert, .sound]) { _, _ in }
-                        }
-                    }
-
-                LaunchAtLogin.Toggle("Launch at login")
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
+
+            SettingsMenu()
+                .padding(.horizontal, 12)
 
             if case .failed(let message) = self.engine.status {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                     Text(message)
-                        .font(.callout)
+                        .font(.jb(.callout))
                     Spacer()
                     Button("Retry") {
                         self.engine.start()

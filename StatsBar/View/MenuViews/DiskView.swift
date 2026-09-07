@@ -55,7 +55,7 @@ struct DiskView: View {
                         Text(
                             "Disk: \(self.disks[element.key]?.mediaName ?? "")"
                         )
-                        .font(.callout)
+                        .font(.jb(.callout))
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -64,7 +64,7 @@ struct DiskView: View {
                         Text(
                             "\(element.key) (\(self.disks[element.key]?.fileSystem.uppercased() ?? ""))"
                         )
-                        .font(.system(size: 12))
+                        .font(.jb(size: 12))
                         .frame(maxWidth: .infinity, alignment: .trailing)
                     }
 
@@ -128,7 +128,7 @@ struct DiskView: View {
                                                     bytes: usage.usage[0].value
                                                 ).getReadableString()
                                             )
-                                            .font(.callout)
+                                            .font(.jb(.callout))
                                             .foregroundStyle(
                                                 Color.blue.adaptedTextColor(
                                                     self.environment
@@ -157,7 +157,7 @@ struct DiskView: View {
                                                     )
                                                 ).getReadableString()
                                             )
-                                            .font(.callout)
+                                            .font(.jb(.callout))
                                             .foregroundStyle(
                                                 Color.mint.adaptedTextColor(
                                                     self.environment
@@ -202,14 +202,14 @@ struct DiskView: View {
                                 alignment: .center
                             )
                             Text("Read")
-                                .font(.callout)
+                                .font(.jb(.callout))
                             Spacer()
                             Text(
                                 Units(
                                     bytes: metrics.getDiskRead(key: element.key)
                                 ).getReadableString()
                             )
-                            .font(.callout)
+                            .font(.jb(.callout))
                         }
 
                         Divider()
@@ -223,7 +223,7 @@ struct DiskView: View {
                             .foregroundStyle(Color.mint)
                             .frame(width: 10, height: 10, alignment: .center)
                             Text("Write")
-                                .font(.callout)
+                                .font(.jb(.callout))
                             Spacer()
                             Text(
                                 Units(
@@ -232,7 +232,7 @@ struct DiskView: View {
                                     )
                                 ).getReadableString()
                             )
-                            .font(.callout)
+                            .font(.jb(.callout))
                         }
                     }
                     .padding(.vertical, 2)
@@ -240,37 +240,37 @@ struct DiskView: View {
                     if let disk = self.disks[element.key] {
                         HStack(alignment: .center) {
                             Text("Available")
-                                .font(.callout)
+                                .font(.jb(.callout))
                             Spacer()
                             Text(
                                 "\(DiskSize(size: self.disks[element.key]?.free ?? 0).getReadableMemory()) / \(DiskSize(size: self.disks[element.key]?.size ?? 0).getReadableMemory())"
                             )
-                            .font(.callout)
+                            .font(.jb(.callout))
                         }
                         .padding(.vertical, 2)
 
                         if !disk.root {
                             HStack(alignment: .center) {
                                 Text("Connection")
-                                    .font(.callout)
+                                    .font(.jb(.callout))
                                 Spacer()
                                 Text(
                                     self.disks[element.key]?.connectionType
                                         .uppercased() ?? "--"
                                 )
-                                .font(.callout)
+                                .font(.jb(.callout))
                             }
                             .padding(.vertical, 2)
 
                             HStack(alignment: .center) {
                                 Text("Model")
-                                    .font(.callout)
+                                    .font(.jb(.callout))
                                 Spacer()
                                 Text(
                                     self.disks[element.key]?.model.uppercased()
                                         ?? "--"
                                 )
-                                .font(.callout)
+                                .font(.jb(.callout))
                             }
                             .padding(.vertical, 2)
                         }

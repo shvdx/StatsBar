@@ -34,11 +34,11 @@ struct PowerView: View {
     {
         HStack {
             Text(title)
-                .font(.callout)
+                .font(.jb(.callout))
                 .fontWeight(bold ? .semibold : .regular)
             Spacer()
             Text(String(format: "%.2f W", arguments: [watts]))
-                .font(.callout)
+                .font(.jb(.callout))
         }
         .frame(maxWidth: .infinity)
     }
