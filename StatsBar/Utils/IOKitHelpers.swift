@@ -18,14 +18,12 @@ func getIOServices(service: String) throws -> [(
     let service = IOServiceMatching(service)!
     var iter = io_iterator_t(0)
     if IOServiceGetMatchingServices(0, service, &iter) != 0 {
-        print("Error: Service not found")
         throw ServiceError.matchingServiceNotFound
     }
 
     while case let next = IOIteratorNext(iter), next != 0 {
         var buff = [CChar](repeating: 0, count: 128)
         if IORegistryEntryGetName(next, &buff) != 0 {
-            print("Error reading entry name: \(next)")
             throw ServiceError.errorReadingIORegistry
         }
 

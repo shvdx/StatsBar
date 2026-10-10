@@ -14,6 +14,8 @@ struct SettingsMenu: View {
     @AppStorage(NotificationManager.enabledKey) private
         var notificationsEnabled = true
 
+    @ObservedObject private var updater = UpdaterManager.shared
+
     @State private var expanded = false
 
     var body: some View {
@@ -49,6 +51,21 @@ struct SettingsMenu: View {
                         }
 
                     LaunchAtLogin.Toggle("Launch at login")
+
+                    Button {
+                        self.updater.checkForUpdates()
+                    } label: {
+                        HStack {
+                            Text("Check for Updates…")
+                                .font(.jb(.callout))
+                            Spacer()
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.jb(.caption))
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!self.updater.canCheckForUpdates)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

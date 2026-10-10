@@ -4,6 +4,18 @@
 build/
 DerivedData/
 
+## Release artifacts (published to GitHub releases, not the repo)
+*.app
+*.xcarchive
+StatsBar-*.zip
+
+## Sparkle update-signing private key — NEVER commit
+*.pem
+sparkle_private_key.pem
+
+## xcode-build-server (machine-local)
+buildServer.json
+
 ## Various settings
 ExportOptions.plist
 *.pbxuser

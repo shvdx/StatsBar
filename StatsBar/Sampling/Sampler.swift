@@ -247,7 +247,6 @@ struct Sampler {
         case "nJ":
             return watts / 1e9
         default:
-            print("Invalid energy unit: \(unit)")
             return 0
         }
     }

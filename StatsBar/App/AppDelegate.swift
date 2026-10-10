@@ -20,6 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.registerFonts()
         LocationAuth.shared.request()
+        // touch to start Sparkle's scheduled update checks
+        _ = UpdaterManager.shared
 
         if let window = NSApplication.shared.windows.first {
             window.close()
@@ -49,12 +51,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupMenu() {
         let menuView = NSHostingView(rootView: MenuView(engine: self.engine))
-        let heightMax = (NSScreen.main?.visibleFrame.height ?? 800) - 24
+        let heightMax = (NSScreen.main?.visibleFrame.height ?? 960) - 24
         menuView.frame = NSRect(
             x: 0,
             y: 0,
             width: 320,
-            height: min(800, heightMax)
+            height: min(960, heightMax)
         )
 
         let menuItem = NSMenuItem()

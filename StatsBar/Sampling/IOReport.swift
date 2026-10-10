@@ -141,7 +141,6 @@ private func getIOChannels() throws -> CFMutableDictionary {
             0
         )
         guard let channel = channel?.takeRetainedValue() else {
-            print("Channel empty for name: \(gname): \(sname ?? "")")
             continue
         }
         channels.append(channel)

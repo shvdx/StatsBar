@@ -30,22 +30,19 @@ struct SOCInfo {
                 name == "pmgr"
             })
         else {
-            print("Power metrics entry not found")
             throw ServiceError.powerManagerRegistryNotFound
         }
 
         var props: Unmanaged<CFMutableDictionary>?
-        if IORegistryEntryCreateCFProperties(
+        // nonzero return => props stays nil => caught by guard below
+        _ = IORegistryEntryCreateCFProperties(
             pmgr.next,
             &props,
             kCFAllocatorDefault,
             0
-        ) != 0 {
-            print("Error: failed to get properties")
-        }
+        )
 
         guard let props = props?.takeUnretainedValue() as? [String: Any] else {
-            print("Props is empty")
             throw ServiceError.dictionaryNull(for: "Power manager")
         }
 
@@ -135,7 +132,6 @@ private func getFreq(dict: [String: Any], key: String, isM3Below: Bool) throws
     bytes.removeAll()
     chunks.removeAll()
 
-    //        print("key: \(key): V: \(length) - \(freqs) - \(volts)")
     return freqs
 }
 

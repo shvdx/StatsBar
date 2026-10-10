@@ -101,9 +101,10 @@ struct Metrics {
     }
 
     func getSwapUsage() -> Double {
-        let used = self.getSwapUsed()
-        return !used.isNaN && used > 0.0
-            ? (used * 100) / Double(self.getTotalSwap()) : 0
+        // ratio from raw bytes; getTotalSwap() truncates to GB => 0 => +Inf
+        let total = self.swapUsage.1
+        guard total > 0 else { return 0 }
+        return Double(self.swapUsage.0) * 100 / Double(total)
     }
 
     func getSwapUsed() -> Double {
