@@ -5,7 +5,7 @@
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/shank03/StatsBar/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string></string>
+	<string>Vbpea3m8zfC4YJtGYKSL2rrt99y31khs8paPxE532zo=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUScheduledCheckInterval</key>
