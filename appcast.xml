@@ -3,6 +3,39 @@
   <channel>
     <title>StatsBar</title>
     <item>
+      <title>2.0.1</title>
+      <pubDate>Sat, 10 Oct 2026 17:10:00 +0000</pubDate>
+      <sparkle:version>13</sparkle:version>
+      <sparkle:shortVersionString>2.0.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.1</sparkle:minimumSystemVersion>
+      <description>
+        <![CDATA[
+        <h3>New</h3>
+        <ul>
+          <li>Apple M5 support: Super cores show as S-CPU next to E-CPU, and M5 Pro/Max Performance cores as P-CPU.</li>
+          <li>Early support for M6 with all three CPU tiers (E, P, S).</li>
+          <li>Dot-matrix graphs.</li>
+          <li>New app icon built for the macOS 26 and 27 look, with dark and tinted variants.</li>
+        </ul>
+        <h3>Improved</h3>
+        <ul>
+          <li>CPU core detection reads the system directly instead of parsing system_profiler, whose format changed in macOS 26 and 27.</li>
+          <li>Matching corner radius on graphs, hover readouts, buttons, and the error banner.</li>
+          <li>A Mac whose GPU frequency table can't be read now still starts sampling.</li>
+        </ul>
+        <h3>Known issues</h3>
+        <ul>
+          <li>On macOS 27, CPU and ANE power read 0 W. GPU and system power are unaffected.</li>
+        </ul>
+        ]]>
+      </description>
+      <enclosure
+        url="https://github.com/shank03/StatsBar/releases/download/v2.0.1/StatsBar-2.0.1.zip"
+        sparkle:edSignature="V8ipOlg0UBtC5vVRnIPcxTiZsb8SgNnI9BW7tSiniGQ/1xNtclLYbBXWYXMicZG1fJFDb397IKDlvv5GFR67Bg=="
+        length="4701793"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>2.0.0</title>
       <pubDate>Fri, 10 Oct 2026 12:00:00 +0000</pubDate>
       <sparkle:version>12</sparkle:version>
