@@ -45,7 +45,7 @@ struct MemView: View {
                         x: .value("X", $0.id),
                         y: .value("Y", $0.memUsage[0])
                     )
-                    .interpolationMethod(.catmullRom)
+                    .opacity(0)  // keeps scale + selection; DotMatrix draws the fill
                     .foregroundStyle(Color.red)
 
                     if let phyMemSelection {
@@ -77,7 +77,10 @@ struct MemView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.red, in: Capsule())
+                                .background(
+                                    Color.red,
+                                    in: RoundedRectangle(cornerRadius: CORNER_RADIUS)
+                                )
                                 .drawingGroup()
                             }
                     }
@@ -90,6 +93,17 @@ struct MemView: View {
                 ])
                 .chartYScale(domain: [0, 100])
                 .chartXSelection(value: $phyMemSelection)
+                .chartBackground { proxy in
+                    DotMatrix(
+                        proxy: proxy,
+                        series: [
+                            DotSeries(
+                                color: Color.red,
+                                points: self.usageGraph.map { ($0.id, $0.memUsage[0]) }
+                            )
+                        ]
+                    )
+                }
                 .clipShape(self.graphShape)
                 .overlay(self.graphShape.stroke(.gray, lineWidth: 1))
 
@@ -100,7 +114,7 @@ struct MemView: View {
                         x: .value("X", $0.id),
                         y: .value("Y", $0.swapUsage[0])
                     )
-                    .interpolationMethod(.catmullRom)
+                    .opacity(0)  // keeps scale + selection; DotMatrix draws the fill
                     .foregroundStyle(Color.yellow)
 
                     if let swapMemSelection {
@@ -132,7 +146,10 @@ struct MemView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.yellow, in: Capsule())
+                                .background(
+                                    Color.yellow,
+                                    in: RoundedRectangle(cornerRadius: CORNER_RADIUS)
+                                )
                                 .drawingGroup()
                             }
                     }
@@ -145,6 +162,17 @@ struct MemView: View {
                 ])
                 .chartYScale(domain: [0, 100])
                 .chartXSelection(value: $swapMemSelection)
+                .chartBackground { proxy in
+                    DotMatrix(
+                        proxy: proxy,
+                        series: [
+                            DotSeries(
+                                color: Color.yellow,
+                                points: self.usageGraph.map { ($0.id, $0.swapUsage[0]) }
+                            )
+                        ]
+                    )
+                }
                 .clipShape(self.graphShape)
                 .overlay(self.graphShape.stroke(.gray, lineWidth: 1))
             }

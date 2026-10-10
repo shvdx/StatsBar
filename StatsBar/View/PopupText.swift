@@ -20,6 +20,7 @@ struct PopupText: View {
                     Text("StatsBar")
                 }
             } else if let metric = self.engine.metrics {
+                let coreCount = metric.clusters.reduce(0) { $0 + $1.cores.count }
                 HStack(spacing: 8) {
                     //                    Image(systemName: "cpu")
                     //                        .font(.jb(size: 15))
@@ -41,60 +42,33 @@ struct PopupText: View {
                     ZStack {
                         HStack(spacing: 1) {
                             ForEach(
-                                Array(metric.eCores.enumerated()),
+                                Array(metric.clusters.enumerated()),
                                 id: \.offset
-                            ) { index, v in
-                                VStack {
-                                    UnevenRoundedRectangle(
-                                        topLeadingRadius: 2,
-                                        bottomLeadingRadius: 0,
-                                        bottomTrailingRadius: 0,
-                                        topTrailingRadius: 2,
-                                        style: .circular
-                                    )
-                                    .foregroundStyle(Color.blue)
+                            ) { _, cluster in
+                                ForEach(
+                                    Array(cluster.cores.enumerated()),
+                                    id: \.offset
+                                ) { _, v in
+                                    VStack {
+                                        UnevenRoundedRectangle(
+                                            topLeadingRadius: 2,
+                                            bottomLeadingRadius: 0,
+                                            bottomTrailingRadius: 0,
+                                            topTrailingRadius: 2,
+                                            style: .circular
+                                        )
+                                        .foregroundStyle(cluster.tier.color)
+                                        .frame(
+                                            width: 56 / CGFloat(max(1, coreCount)),
+                                            height: POPUP_VIEW_HEIGHT * CGFloat(v),
+                                            alignment: .bottom
+                                        )
+                                    }
                                     .frame(
-                                        width: 56
-                                            / CGFloat(
-                                                metric.eCores.count
-                                                    + metric.pCores.count
-                                            ),
-                                        height: POPUP_VIEW_HEIGHT * CGFloat(v),
+                                        height: POPUP_VIEW_HEIGHT,
                                         alignment: .bottom
                                     )
                                 }
-                                .frame(
-                                    height: POPUP_VIEW_HEIGHT,
-                                    alignment: .bottom
-                                )
-                            }
-                            ForEach(
-                                Array(metric.pCores.enumerated()),
-                                id: \.offset
-                            ) { index, v in
-                                VStack {
-                                    UnevenRoundedRectangle(
-                                        topLeadingRadius: 2,
-                                        bottomLeadingRadius: 0,
-                                        bottomTrailingRadius: 0,
-                                        topTrailingRadius: 2,
-                                        style: .circular
-                                    )
-                                    .foregroundStyle(Color.green)
-                                    .frame(
-                                        width: 56
-                                            / CGFloat(
-                                                metric.eCores.count
-                                                    + metric.pCores.count
-                                            ),
-                                        height: POPUP_VIEW_HEIGHT * CGFloat(v),
-                                        alignment: .bottom
-                                    )
-                                }
-                                .frame(
-                                    height: POPUP_VIEW_HEIGHT,
-                                    alignment: .bottom
-                                )
                             }
                         }
                         .padding(.horizontal, 1)

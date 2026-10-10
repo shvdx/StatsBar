@@ -10,39 +10,31 @@ import Foundation
 import IOKit
 
 struct SOCInfo {
-    let eCpuFreqs: [UInt32]
-    let pCpuFreqs: [UInt32]
+    // lowest tier first
+    let clusters: [CoreCluster]
     let gpuFreqs: [UInt32]
 
     let chipName: String
     let macModel: String
     let memorySize: Int  // GB
-    let eCores: Int
-    let pCores: Int
     let gpuCores: Int
 
     init() throws {
         let m3Below = try Regex("[m|M][1-3]")
         let services = try getIOServices(service: SERVICE_NAME)
 
-        guard
-            let pmgr = services.first(where: { (name, _) in
-                name == "pmgr"
-            })
-        else {
+        // M1–M5: tables on "pmgr"; M6+: on "pmgr-child", "pmgr" is a bare stub
+        let nodes = services.filter { $0.name == "pmgr" || $0.name == "pmgr-child" }
+        guard !nodes.isEmpty else {
             throw ServiceError.powerManagerRegistryNotFound
         }
 
-        var props: Unmanaged<CFMutableDictionary>?
-        // nonzero return => props stays nil => caught by guard below
-        _ = IORegistryEntryCreateCFProperties(
-            pmgr.next,
-            &props,
-            kCFAllocatorDefault,
-            0
-        )
-
-        guard let props = props?.takeUnretainedValue() as? [String: Any] else {
+        let dicts: [[String: Any]] = nodes.compactMap { node in
+            var props: Unmanaged<CFMutableDictionary>?
+            _ = IORegistryEntryCreateCFProperties(node.next, &props, kCFAllocatorDefault, 0)
+            return props?.takeRetainedValue() as? [String: Any]
+        }
+        guard !dicts.isEmpty else {
             throw ServiceError.dictionaryNull(for: "Power manager")
         }
 
@@ -57,40 +49,93 @@ struct SOCInfo {
                 )[0]
             ) ?? 0
 
-        let proc =
-            sysInfo.spHardwareDataType[0].number_processors.split(
-                separator: "proc "
-            ).last ?? ""
-        let cores = proc.split(separator: ":").map { Int($0) ?? 0 }
-        self.eCores = cores[cores.count - 1]
-        self.pCores = cores[cores.count - 2]
         self.gpuCores = Int(sysInfo.spDisplaysDataType[0].sppci_cores) ?? 0
 
-        let eCpuKey = "voltage-states1-sram"
-        let pCpuKey = "voltage-states5-sram"
-        let gpuKey = "voltage-states9-sram"
-
+        // tiers from sysctl, not number_processors: its field order changed in macOS 26 and 27
+        let tiers = try readCoreTiers()
+        let hasSuper = tiers.contains { $0.tier == .superCore }
         let isM3Below = chipName.contains(m3Below)
-        let eCpuFreq = try getFreq(
-            dict: props,
-            key: eCpuKey,
-            isM3Below: isM3Below
-        )
-        let pCpuFreq = try getFreq(
-            dict: props,
-            key: pCpuKey,
-            isM3Below: isM3Below
-        )
-        let gpuFreq = try getFreq(dict: props, key: gpuKey, isM3Below: true)
+        let accClusters =
+            dicts.lazy.compactMap { $0["acc-clusters"] as? Data }.first.map {
+                [UInt8]($0)
+            } ?? []
 
-        if eCpuFreq.isEmpty || pCpuFreq.isEmpty {
+        self.clusters = tiers.map { tier, cores in
+            CoreCluster(
+                tier: tier,
+                cores: cores,
+                freqs: firstFreq(
+                    dicts: dicts,
+                    keys: coreTierFreqKeys(
+                        tier: tier,
+                        hasSuper: hasSuper,
+                        accClusters: accClusters
+                    ),
+                    isM3Below: isM3Below
+                ),
+                channel: coreTierChannel(tier: tier, hasSuper: hasSuper)
+            )
+        }
+        assert(!self.clusters.isEmpty)
+
+        // GPU tables are Hz on every chip; none => usage unscaled, not a startup failure
+        self.gpuFreqs = firstFreq(
+            dicts: dicts,
+            keys: ["voltage-states9-sram", "voltage-states9"],
+            isM3Below: true
+        )
+    }
+}
+
+// hw.perflevelN.{name,physicalcpu}, perflevel0 first
+private func readCoreTiers() throws -> [(tier: CoreTier, cores: Int)] {
+    guard let levels = sysctlInt("hw.nperflevels"), levels >= 1, levels <= CORE_TIERS_MAX else {
+        throw ServiceError.noCpuCores
+    }
+    var perflevels: [(name: String?, cores: Int)] = []
+    for level in 0..<levels {
+        guard let cores = sysctlInt("hw.perflevel\(level).physicalcpu") else {
             throw ServiceError.noCpuCores
         }
-
-        self.eCpuFreqs = eCpuFreq
-        self.pCpuFreqs = pCpuFreq
-        self.gpuFreqs = gpuFreq
+        perflevels.append((sysctlString("hw.perflevel\(level).name"), cores))
     }
+    return try coreTiers(perflevels: perflevels)
+}
+
+// first key (in order) holding a non-empty table in any node; none => [] (usage unscaled, freq 0)
+func firstFreq(dicts: [[String: Any]], keys: [String], isM3Below: Bool) -> [UInt32] {
+    for key in keys {
+        for dict in dicts where dict[key] != nil {
+            if let freqs = try? getFreq(dict: dict, key: key, isM3Below: isM3Below),
+                !freqs.isEmpty
+            {
+                return freqs
+            }
+        }
+    }
+    return []
+}
+
+private func sysctlInt(_ name: String) -> Int? {
+    var value: Int32 = 0
+    var size = MemoryLayout<Int32>.size
+
+    guard sysctlbyname(name, &value, &size, nil, 0) == 0 else { return nil }
+    guard size == MemoryLayout<Int32>.size else { return nil }
+    return Int(value)
+}
+
+private func sysctlString(_ name: String) -> String? {
+    // perflevel names are short ("Efficiency"); bound the buffer
+    let size_max = 64
+    var size = 0
+
+    guard sysctlbyname(name, nil, &size, nil, 0) == 0 else { return nil }
+    guard size > 0, size <= size_max else { return nil }
+
+    var buffer = [CChar](repeating: 0, count: size)
+    guard sysctlbyname(name, &buffer, &size, nil, 0) == 0 else { return nil }
+    return buffer.withUnsafeBufferPointer { String(cString: $0.baseAddress!) }
 }
 
 private func getFreq(dict: [String: Any], key: String, isM3Below: Bool) throws

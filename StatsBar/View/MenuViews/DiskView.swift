@@ -75,7 +75,7 @@ struct DiskView: View {
                                     x: .value("X", usageInfo.id),
                                     y: .value("Y", diskUsage.value)
                                 )
-                                .interpolationMethod(.catmullRom)
+                                .opacity(0)  // keeps scale + selection; DotMatrix draws the fill
                                 .foregroundStyle(
                                     by: .value("OP Bytes type", diskUsage.type)
                                 )
@@ -139,7 +139,7 @@ struct DiskView: View {
                                         .padding(.horizontal, 6)
                                         .background(
                                             Color.blue,
-                                            in: Capsule()
+                                            in: RoundedRectangle(cornerRadius: CORNER_RADIUS)
                                         )
                                         .drawingGroup()
                                     }
@@ -169,7 +169,7 @@ struct DiskView: View {
                                         .padding(.horizontal, 6)
                                         .background(
                                             Color.mint,
-                                            in: Capsule()
+                                            in: RoundedRectangle(cornerRadius: CORNER_RADIUS)
                                         )
                                         .drawingGroup()
                                     }
@@ -189,6 +189,21 @@ struct DiskView: View {
                     ])
                     .chartYScale(domain: getDiskGraphDomain(disk: element.key))
                     .chartXSelection(value: self.binding(disk: element.key))
+                    .chartBackground { proxy in
+                        DotMatrix(
+                            proxy: proxy,
+                            series: [
+                                DotSeries(
+                                    color: Color.blue,
+                                    points: element.value.map { ($0.id, $0.usage[0].value) }
+                                ),
+                                DotSeries(
+                                    color: Color.mint,
+                                    points: element.value.map { ($0.id, $0.usage[1].value) }
+                                ),
+                            ]
+                        )
+                    }
                     .clipShape(self.graphShape)
                     .overlay(self.graphShape.stroke(.gray, lineWidth: 1))
                     .frame(height: 124)

@@ -160,8 +160,7 @@ final class MetricsEngine {
         self.usageGraph.append(
             UsagePoint(
                 id: id,
-                eCPUUsage: metrics.getECPUInfo(),
-                pCPUUsage: metrics.getPCPUInfo(),
+                cpuUsage: metrics.clusters.indices.map { metrics.getClusterInfo($0) },
                 gpuUsage: [metrics.getGPUUsage(), metrics.getGPUFreq()],
                 memUsage: [metrics.getMemUsage(), metrics.getMemUsed()],
                 swapUsage: [metrics.getSwapUsage(), metrics.getSwapUsed()],

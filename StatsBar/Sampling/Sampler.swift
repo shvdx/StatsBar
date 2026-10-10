@@ -11,10 +11,9 @@ private let CPU_FREQ_SUBG = "CPU Core Performance States"
 private let GPU_FREQ_SUBG = "GPU Performance States"
 
 private struct CoreSample {
-    let eCpuUsage: (UInt32, Float32)
-    let pCpuUsage: (UInt32, Float32)
-    let eCores: [Float32]
-    let pCores: [Float32]
+    // per cluster, SOCInfo.clusters order
+    let clusters: [(freq: UInt32, usage: Float32)]
+    let cores: [[Float32]]
     let gpuUsage: (UInt32, Float32)
     let cpuPower: Float32
     let gpuPower: Float32
@@ -55,43 +54,29 @@ struct Sampler {
     }
 
     private func coreSample(samples: [IOSample], dt: TimeInterval) -> CoreSample {
-        var eCpuUsages = [(UInt32, Float32)]()
-        var pCpuUsages = [(UInt32, Float32)]()
-        var eCores = [Float32](repeating: 0, count: self.socInfo.eCores)
-        var pCores = [Float32](repeating: 0, count: self.socInfo.pCores)
+        let clusters = self.socInfo.clusters
+
+        // per-core (freq, usage) per cluster; count doubles as the next core index
+        var usages = clusters.map { _ in [(UInt32, Float32)]() }
+        var cores = clusters.map { [Float32](repeating: 0, count: $0.cores) }
         var gpuUsage: (UInt32, Float32) = (0, 0)
         var cpuPower = Float32(0)
         var gpuPower = Float32(0)
         var anePower = Float32(0)
 
-        var eCpuCounter = 0
-        var pCpuCounter = 0
-
         for sample in samples {
             if sample.group == "CPU Stats" && sample.subGroup == CPU_FREQ_SUBG {
-                if sample.channel.starts(with: "ECPU")
-                    && eCpuCounter < eCores.count
-                {
-                    let info = self.calculateFrequencies(
-                        dict: sample.delta,
-                        freqs: self.socInfo.eCpuFreqs
-                    )
-                    eCpuUsages.append(info)
-                    eCores[eCpuCounter] = info.usage
-                    eCpuCounter += 1
-                    continue
-                }
-
-                if sample.channel.starts(with: "PCPU")
-                    && pCpuCounter < pCores.count
-                {
-                    let info = self.calculateFrequencies(
-                        dict: sample.delta,
-                        freqs: self.socInfo.pCpuFreqs
-                    )
-                    pCpuUsages.append(info)
-                    pCores[pCpuCounter] = info.usage
-                    pCpuCounter += 1
+                // contains, not prefix: Ultra channels carry a DIE_n_ prefix
+                if let index = clusters.firstIndex(where: { sample.channel.contains($0.channel) }) {
+                    let core = usages[index].count
+                    if core < cores[index].count {
+                        let info = self.calculateFrequencies(
+                            dict: sample.delta,
+                            freqs: clusters[index].freqs
+                        )
+                        usages[index].append(info)
+                        cores[index][core] = info.usage
+                    }
                     continue
                 }
             }
@@ -125,16 +110,10 @@ struct Sampler {
         }
 
         return CoreSample(
-            eCpuUsage: self.calculateAggregateFrequencies(
-                items: eCpuUsages,
-                freqs: self.socInfo.eCpuFreqs
-            ),
-            pCpuUsage: self.calculateAggregateFrequencies(
-                items: pCpuUsages,
-                freqs: self.socInfo.pCpuFreqs
-            ),
-            eCores: eCores,
-            pCores: pCores,
+            clusters: clusters.indices.map {
+                self.calculateAggregateFrequencies(items: usages[$0], freqs: clusters[$0].freqs)
+            },
+            cores: cores,
             gpuUsage: gpuUsage,
             cpuPower: cpuPower,
             gpuPower: gpuPower,
@@ -144,29 +123,23 @@ struct Sampler {
 
     private func aggregate(cores: [CoreSample]) throws -> Metrics {
         let measures = Float32(Self.measures)
+        assert(cores.count == Self.measures)
 
-        var eCores = [Float32](repeating: 0, count: self.socInfo.eCores)
-        var pCores = [Float32](repeating: 0, count: self.socInfo.pCores)
-        for i in 0..<self.socInfo.eCores {
-            eCores[i] = cores.reduce(0, { $0 + $1.eCores[i] }) / measures
-        }
-        for i in 0..<self.socInfo.pCores {
-            pCores[i] = cores.reduce(0, { $0 + $1.pCores[i] }) / measures
+        let clusters = self.socInfo.clusters.indices.map { index in
+            let cluster = self.socInfo.clusters[index]
+            let usages = (0..<cluster.cores).map { core in
+                cores.reduce(0, { $0 + $1.cores[index][core] }) / measures
+            }
+            return ClusterUsage(
+                tier: cluster.tier,
+                freq: cores.reduce(0, { $0 + $1.clusters[index].freq }) / UInt32(Self.measures),
+                usage: cores.reduce(0, { $0 + $1.clusters[index].usage }) / measures,
+                cores: usages
+            )
         }
 
         return Metrics(
-            eCpuUsage: (
-                cores.reduce(0, { $0 + $1.eCpuUsage.0 })
-                    / UInt32(Self.measures),
-                cores.reduce(0, { $0 + $1.eCpuUsage.1 }) / measures
-            ),
-            pCpuUsage: (
-                cores.reduce(0, { $0 + $1.pCpuUsage.0 })
-                    / UInt32(Self.measures),
-                cores.reduce(0, { $0 + $1.pCpuUsage.1 }) / measures
-            ),
-            eCores: eCores,
-            pCores: pCores,
+            clusters: clusters,
             gpuUsage: (
                 cores.reduce(0, { $0 + $1.gpuUsage.0 }) / UInt32(Self.measures),
                 cores.reduce(0, { $0 + $1.gpuUsage.1 }) / measures
@@ -193,12 +166,14 @@ struct Sampler {
         guard let offset else {
             return (0, 0)
         }
-        guard let minFreq = freqs.first, let maxFreq = freqs.last else {
-            return (0, 0)
-        }
-
         let usage = items.dropFirst(offset).reduce(0.0) { $0 + Double($1.f) }
         let total = items.reduce(0.0) { $0 + Double($1.f) }
+        let usageRatio = total == 0 ? 0 : usage / total
+
+        // no freq table (unknown chip) => residency ratio only
+        guard let minFreq = freqs.first, let maxFreq = freqs.last else {
+            return (0, Float32(usageRatio))
+        }
         let count = freqs.count
 
         var avgFreq = Double(0)
@@ -207,9 +182,7 @@ struct Sampler {
             avgFreq += percent * Double(freqs[i])
         }
 
-        let usageRatio = total == 0 ? 0 : usage / total
-        let fromMax =
-            (max(avgFreq, Double(minFreq)) * usageRatio) / Double(maxFreq)
+        let fromMax = (max(avgFreq, Double(minFreq)) * usageRatio) / Double(maxFreq)
 
         let freq = avgFreq.isFinite ? min(max(avgFreq, 0), Double(UInt32.max)) : 0
         return (UInt32(freq), Float32(fromMax))
@@ -219,14 +192,8 @@ struct Sampler {
         items: [(UInt32, Float32)],
         freqs: [UInt32]
     ) -> (UInt32, Float32) {
-        let avgFreq =
-            items.count == 0
-            ? 0
-            : (items.reduce(0.0, { $0 + Float32($1.0) }) / Float32(items.count))
-        let avgPrec =
-            items.count == 0
-            ? 0
-            : (items.reduce(0.0, { $0 + Float32($1.1) }) / Float32(items.count))
+        let avgFreq = items.count == 0 ? 0 : (items.reduce(0.0, { $0 + Float32($1.0) }) / Float32(items.count))
+        let avgPrec = items.count == 0 ? 0 : (items.reduce(0.0, { $0 + Float32($1.1) }) / Float32(items.count))
         let minFreq = Float32(freqs.first ?? 0)
 
         return (UInt32(max(avgFreq, minFreq)), avgPrec)
@@ -258,8 +225,9 @@ struct Sampler {
 
         for i in 0..<count {
             let name =
-                IOReportStateGetNameForIndex(dict, i)?.takeUnretainedValue()
-                ?? ("" as CFString)
+            IOReportStateGetNameForIndex(dict, i)?.takeUnretainedValue()
+            ?? ("" as CFString)
+
             let val = IOReportStateGetResidency(dict, i)
             res.append((name as String, val))
         }

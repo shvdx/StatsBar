@@ -11,4 +11,4 @@ public let POPUP_VIEW_HEIGHT: CGFloat = 22
 public let GRAPH_POINTS_MAX = 32
 
 // shared radius: graphs, banner, buttons, glass panels
-public let CORNER_RADIUS: CGFloat = 12
+public let CORNER_RADIUS: CGFloat = 8

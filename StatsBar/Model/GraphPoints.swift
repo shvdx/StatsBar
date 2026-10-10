@@ -47,8 +47,8 @@ struct DiskUsagePoint: Identifiable {
 
 struct UsagePoint: Identifiable {
     let id: UInt64
-    let eCpuUsage: [Double]
-    let pCpuUsage: [Double]
+    // per cluster [usage %, freq GHz]; empty in seed data
+    let cpuUsage: [[Double]]
     let gpuUsage: [Double]
     let memUsage: [Double]
     let swapUsage: [Double]
@@ -56,16 +56,15 @@ struct UsagePoint: Identifiable {
 
     init(
         id: UInt64,
-        eCPUUsage: [Double],
-        pCPUUsage: [Double],
+        cpuUsage: [[Double]],
         gpuUsage: [Double],
         memUsage: [Double],
         swapUsage: [Double],
         networkUsage: (upload: Int64, download: Int64)
     ) {
         self.id = id
-        self.eCpuUsage = eCPUUsage
-        self.pCpuUsage = pCPUUsage
+        assert(cpuUsage.count <= CORE_TIERS_MAX)
+        self.cpuUsage = cpuUsage
         self.gpuUsage = gpuUsage
         self.memUsage = memUsage
         self.swapUsage = swapUsage
@@ -75,14 +74,17 @@ struct UsagePoint: Identifiable {
         ]
     }
 
+    func cpu(_ index: Int) -> [Double] {
+        return index < self.cpuUsage.count ? self.cpuUsage[index] : [0, 0]
+    }
+
     static func mockData() -> Deque<UsagePoint> {
         var res: Deque<UsagePoint> = []
         for _ in 0..<GRAPH_POINTS_MAX {
             res.append(
                 UsagePoint(
                     id: res.last?.id.advanced(by: 1) ?? 1,
-                    eCPUUsage: [0, 0],
-                    pCPUUsage: [0, 0],
+                    cpuUsage: [],
                     gpuUsage: [0, 0],
                     memUsage: [0, 0],
                     swapUsage: [0, 0],

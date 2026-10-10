@@ -98,7 +98,7 @@ struct NetworkView: View {
                             x: .value("X", usageInfo.id),
                             y: .value("Y", networkUsage.value)
                         )
-                        .interpolationMethod(.catmullRom)
+                        .opacity(0)  // keeps scale + selection; DotMatrix draws the fill
                         .foregroundStyle(
                             by: .value("Bytes type", networkUsage.type)
                         )
@@ -153,7 +153,10 @@ struct NetworkView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.indigo, in: Capsule())
+                                .background(
+                                    Color.indigo,
+                                    in: RoundedRectangle(cornerRadius: CORNER_RADIUS)
+                                )
                                 .drawingGroup()
                             }
                             .annotation(
@@ -177,7 +180,10 @@ struct NetworkView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.purple, in: Capsule())
+                                .background(
+                                    Color.purple,
+                                    in: RoundedRectangle(cornerRadius: CORNER_RADIUS)
+                                )
                                 .drawingGroup()
                             }
                     }
@@ -195,6 +201,21 @@ struct NetworkView: View {
             ])
             .chartYScale(domain: getNetworkGraphDomain())
             .chartXSelection(value: $networkSelection)
+            .chartBackground { proxy in
+                DotMatrix(
+                    proxy: proxy,
+                    series: [
+                        DotSeries(
+                            color: Color.indigo,
+                            points: self.usageGraph.map { ($0.id, $0.networkUsage[1].value) }
+                        ),
+                        DotSeries(
+                            color: Color.purple,
+                            points: self.usageGraph.map { ($0.id, $0.networkUsage[0].value) }
+                        ),
+                    ]
+                )
+            }
             .clipShape(self.graphShape)
             .overlay(self.graphShape.stroke(.gray, lineWidth: 1))
             .frame(height: 124)
