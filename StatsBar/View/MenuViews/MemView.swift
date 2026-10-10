@@ -78,6 +78,7 @@ struct MemView: View {
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
                                 .background(Color.red, in: RoundedRectangle(cornerRadius: 10))
+                                .drawingGroup()
                             }
                     }
                 }
@@ -132,6 +133,7 @@ struct MemView: View {
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
                                 .background(Color.yellow, in: RoundedRectangle(cornerRadius: 10))
+                                .drawingGroup()
                             }
                     }
                 }

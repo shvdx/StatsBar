@@ -141,6 +141,7 @@ struct DiskView: View {
                                             Color.blue,
                                             in: RoundedRectangle(cornerRadius: 10)
                                         )
+                                        .drawingGroup()
                                     }
                                     .annotation(
                                         position: .bottom,
@@ -170,6 +171,7 @@ struct DiskView: View {
                                             Color.mint,
                                             in: RoundedRectangle(cornerRadius: 10)
                                         )
+                                        .drawingGroup()
                                     }
                             }
                         }

@@ -84,6 +84,7 @@ struct CPUView: View {
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 6)
                                     .background(Color.blue, in: RoundedRectangle(cornerRadius: 10))
+                                    .drawingGroup()
                                 }
                         }
                     }
@@ -138,6 +139,7 @@ struct CPUView: View {
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 6)
                                     .background(Color.green, in: RoundedRectangle(cornerRadius: 10))
+                                    .drawingGroup()
                                 }
                         }
                     }
@@ -193,6 +195,7 @@ struct CPUView: View {
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
                                 .background(Color.orange, in: RoundedRectangle(cornerRadius: 10))
+                                .drawingGroup()
                             }
                     }
                 }
