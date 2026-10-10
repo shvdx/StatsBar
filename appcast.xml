@@ -1,0 +1,42 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>StatsBar</title>
+    <item>
+      <title>2.0.0</title>
+      <pubDate>Fri, 10 Oct 2026 12:00:00 +0000</pubDate>
+      <sparkle:version>12</sparkle:version>
+      <sparkle:shortVersionString>2.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.1</sparkle:minimumSystemVersion>
+      <description>
+        <![CDATA[
+        <h3>New</h3>
+        <ul>
+          <li>Automatic updates (Settings &rarr; Check for Updates).</li>
+          <li>Top processes: expand the CPU and Memory headers to see the heaviest processes.</li>
+          <li>High-usage notifications for CPU, memory, and power, toggleable in Settings.</li>
+          <li>Settings section with notifications and launch-at-login.</li>
+          <li>Wi-Fi network name and interface in the Network section.</li>
+          <li>JetBrains Mono across the UI.</li>
+        </ul>
+        <h3>Improved</h3>
+        <ul>
+          <li>Popover reworked into one scrollable vertical layout.</li>
+          <li>More resilient sampling: a failed read shows a banner with Retry.</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
+          <li>Memory process list was missing most processes.</li>
+          <li>Swap usage percentage when total swap is under 1 GB.</li>
+          <li>Invisible chart hover readout pill.</li>
+        </ul>
+        ]]>
+      </description>
+      <enclosure
+        url="https://github.com/shank03/StatsBar/releases/download/v2.0.0/StatsBar-2.0.0.zip"
+        sparkle:edSignature="CQocbybt1mTMn3Sl52wYMoiQI9ZIR5gXePjim1kyLf7wSqyINP2nbPnwGsEL5ai3gd7GCckXzVJVFs+u0z4NBA=="
+        length="3326373"
+        type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
