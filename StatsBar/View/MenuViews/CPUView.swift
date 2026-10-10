@@ -33,7 +33,7 @@ struct CPUView: View {
     @State private var pCpuSelection: UInt64? = nil
     @State private var gpuSelection: UInt64? = nil
 
-    private var graphShape = RoundedRectangle(cornerRadius: 12)
+    private var graphShape = RoundedRectangle(cornerRadius: CORNER_RADIUS)
 
     var body: some View {
         VStack(spacing: 8) {
@@ -83,7 +83,7 @@ struct CPUView: View {
                                     }
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 6)
-                                    .background(Color.blue, in: RoundedRectangle(cornerRadius: 10))
+                                    .background(Color.blue, in: Capsule())
                                     .drawingGroup()
                                 }
                         }
@@ -138,7 +138,7 @@ struct CPUView: View {
                                     }
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 6)
-                                    .background(Color.green, in: RoundedRectangle(cornerRadius: 10))
+                                    .background(Color.green, in: Capsule())
                                     .drawingGroup()
                                 }
                         }
@@ -194,7 +194,7 @@ struct CPUView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.orange, in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.orange, in: Capsule())
                                 .drawingGroup()
                             }
                     }
@@ -214,7 +214,7 @@ struct CPUView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.blue)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("E-CPU")
@@ -231,7 +231,7 @@ struct CPUView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.green)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("P-CPU")
@@ -248,7 +248,7 @@ struct CPUView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.orange)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("GPU")

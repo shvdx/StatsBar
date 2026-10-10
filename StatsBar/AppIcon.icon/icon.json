@@ -1,0 +1,30 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.16863,0.70588,0.37255,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "bars.svg",
+          "name" : "bars"
+        }
+      ],
+      "name" : "bars"
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "chip.svg",
+          "name" : "chip"
+        }
+      ],
+      "name" : "chip"
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}

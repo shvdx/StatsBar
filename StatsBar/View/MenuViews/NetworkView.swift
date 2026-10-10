@@ -25,7 +25,7 @@ struct NetworkView: View {
 
     @State private var networkSelection: UInt64? = nil
 
-    private var graphShape = RoundedRectangle(cornerRadius: 12)
+    private var graphShape = RoundedRectangle(cornerRadius: CORNER_RADIUS)
 
     // Wi-Fi connected but no SSID and location not granted => name is hidden.
     private var showLocationWarning: Bool {
@@ -153,7 +153,7 @@ struct NetworkView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.indigo, in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.indigo, in: Capsule())
                                 .drawingGroup()
                             }
                             .annotation(
@@ -177,7 +177,7 @@ struct NetworkView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.purple, in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.purple, in: Capsule())
                                 .drawingGroup()
                             }
                     }
@@ -201,7 +201,7 @@ struct NetworkView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.indigo).frame(
                         width: 10,
                         height: 10,
@@ -219,7 +219,7 @@ struct NetworkView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.purple)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("Upload")

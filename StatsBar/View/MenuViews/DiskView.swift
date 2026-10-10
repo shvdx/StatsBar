@@ -28,7 +28,7 @@ struct DiskView: View {
 
     @State private var diskSelection: [String: UInt64?] = [:]
 
-    private var graphShape = RoundedRectangle(cornerRadius: 12)
+    private var graphShape = RoundedRectangle(cornerRadius: CORNER_RADIUS)
 
     private func getDiskGraphDomain(disk: String) -> [Int64] {
         let maxUsage = (self.diskUsageGraph[disk] ?? []).reduce(Int64(0)) {
@@ -139,7 +139,7 @@ struct DiskView: View {
                                         .padding(.horizontal, 6)
                                         .background(
                                             Color.blue,
-                                            in: RoundedRectangle(cornerRadius: 10)
+                                            in: Capsule()
                                         )
                                         .drawingGroup()
                                     }
@@ -169,7 +169,7 @@ struct DiskView: View {
                                         .padding(.horizontal, 6)
                                         .background(
                                             Color.mint,
-                                            in: RoundedRectangle(cornerRadius: 10)
+                                            in: Capsule()
                                         )
                                         .drawingGroup()
                                     }
@@ -196,9 +196,7 @@ struct DiskView: View {
 
                     HStack(alignment: .center) {
                         HStack(alignment: .center) {
-                            RoundedRectangle(
-                                cornerSize: CGSize(width: 10, height: 10)
-                            ).foregroundStyle(Color.blue).frame(
+                            Circle().foregroundStyle(Color.blue).frame(
                                 width: 10,
                                 height: 10,
                                 alignment: .center
@@ -219,11 +217,9 @@ struct DiskView: View {
                             .padding(.horizontal, 6)
 
                         HStack(alignment: .center) {
-                            RoundedRectangle(
-                                cornerSize: CGSize(width: 10, height: 10)
-                            )
-                            .foregroundStyle(Color.mint)
-                            .frame(width: 10, height: 10, alignment: .center)
+                            Circle()
+                                .foregroundStyle(Color.mint)
+                                .frame(width: 10, height: 10, alignment: .center)
                             Text("Write")
                                 .font(.jb(.callout))
                             Spacer()

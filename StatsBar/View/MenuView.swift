@@ -40,7 +40,7 @@ struct MenuView: View {
                     .padding(.vertical, 4)
                 }
                 .clipShape(
-                    RoundedRectangle(cornerSize: CGSize(width: 8, height: 8))
+                    RoundedRectangle(cornerRadius: CORNER_RADIUS)
                 )
 
                 Spacer()
@@ -53,7 +53,7 @@ struct MenuView: View {
                         .padding(.vertical, 4)
                 }
                 .clipShape(
-                    RoundedRectangle(cornerSize: CGSize(width: 8, height: 8))
+                    RoundedRectangle(cornerRadius: CORNER_RADIUS)
                 )
             }
             .padding(.vertical, 8)
@@ -75,7 +75,7 @@ struct MenuView: View {
                 }
                 .padding(8)
                 .background(.orange.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: CORNER_RADIUS))
                 .padding(.horizontal, 12)
             }
 

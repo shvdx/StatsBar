@@ -29,7 +29,7 @@ struct MemView: View {
     @State private var phyMemSelection: UInt64? = nil
     @State private var swapMemSelection: UInt64? = nil
 
-    private var graphShape = RoundedRectangle(cornerRadius: 12)
+    private var graphShape = RoundedRectangle(cornerRadius: CORNER_RADIUS)
 
     var body: some View {
         VStack(spacing: 8) {
@@ -77,7 +77,7 @@ struct MemView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.red, in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.red, in: Capsule())
                                 .drawingGroup()
                             }
                     }
@@ -132,7 +132,7 @@ struct MemView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 6)
-                                .background(Color.yellow, in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.yellow, in: Capsule())
                                 .drawingGroup()
                             }
                     }
@@ -152,7 +152,7 @@ struct MemView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.red).frame(
                         width: 10,
                         height: 10,
@@ -178,7 +178,7 @@ struct MemView: View {
             .padding(.vertical, 2)
 
             HStack(alignment: .center) {
-                RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+                Circle()
                     .foregroundStyle(Color.yellow)
                     .frame(width: 10, height: 10, alignment: .center)
                 Text("Swap")
